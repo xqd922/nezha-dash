@@ -147,6 +147,7 @@ export abstract class BaseDriver implements IDataSourceDriver {
         "Content-Type": "application/json",
         ...headers,
       },
+      cache: "no-store",
       next: {
         revalidate: this.config?.revalidate,
       },
