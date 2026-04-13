@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { createErrorResponse, requireApiSession } from "@/lib/api-route"
-import { GetServerData } from "@/lib/serverFetchV2"
+import { GetServerData, GetServiceStats } from "@/lib/serverFetchV2"
 
 export const dynamic = "force-dynamic"
 
@@ -11,8 +11,14 @@ export async function GET() {
   }
 
   try {
-    const data = await GetServerData()
-    return NextResponse.json(data, { status: 200 })
+    const [data, serviceStats] = await Promise.all([GetServerData(), GetServiceStats()])
+    return NextResponse.json(
+      {
+        ...data,
+        service_stats: serviceStats,
+      },
+      { status: 200 },
+    )
   } catch (error) {
     console.error("Error in GET handler:", error)
     return createErrorResponse(error)

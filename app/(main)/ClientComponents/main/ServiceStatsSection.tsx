@@ -1,14 +1,12 @@
 "use client"
 
 import { ExclamationTriangleIcon } from "@heroicons/react/20/solid"
-import useSWR from "swr"
-import { useTranslations } from "next-intl"
-import { Loader } from "@/components/loading/Loader"
-import { Progress } from "@/components/ui/progress"
+import { useLocale, useTranslations } from "next-intl"
+import { useServerData } from "@/app/context/server-data-context"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import type { ServiceMonitorStatus, ServiceStats } from "@/lib/drivers/types"
-import { cn, nezhaFetcher } from "@/lib/utils"
+import type { ServiceMonitorStatus } from "@/lib/drivers/types"
+import { cn } from "@/lib/utils"
 
 function clampPercent(value: number) {
   if (!Number.isFinite(value)) {
@@ -49,10 +47,10 @@ function getDayClass(availability: number) {
   }
 
   if (availability > 50) {
-    return "bg-linear-to-b from-green-500/90 shadow-sm to-green-600"
+    return "bg-linear-to-b from-green-500/90 to-green-600 shadow-[0_1px_2px_rgba(22,163,74,0.3)]"
   }
 
-  return "bg-linear-to-b from-red-500/80 shadow-sm to-red-600/90"
+  return "bg-linear-to-b from-red-500/80 to-red-600/90 shadow-[0_1px_2px_rgba(220,38,38,0.3)]"
 }
 
 function parseDateTime(value: string) {
@@ -113,42 +111,43 @@ function parseRelativeDuration(value: string) {
   return new Date(Date.now() + totalSeconds * 1000)
 }
 
-function formatDate(date: Date) {
-  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
+function toBrowserLocale(locale: string) {
+  if (locale === "zh") return "zh-CN"
+  if (locale === "zh-TW") return "zh-TW"
+  return locale
 }
 
-function formatDateTime(date: Date) {
-  const hours = `${date.getHours()}`.padStart(2, "0")
-  const minutes = `${date.getMinutes()}`.padStart(2, "0")
-  const seconds = `${date.getSeconds()}`.padStart(2, "0")
-  return `${formatDate(date)} ${hours}:${minutes}:${seconds}`
+function formatDate(date: Date, locale: string) {
+  return date.toLocaleDateString(toBrowserLocale(locale))
 }
 
-function formatCycleDate(value: string) {
+function formatDateTime(date: Date, locale: string) {
+  return date.toLocaleString(toBrowserLocale(locale))
+}
+
+function formatCycleDate(value: string, locale: string) {
   const parsedDate = parseDateTime(value)
-  return parsedDate ? formatDate(parsedDate) : value
+  return parsedDate ? formatDate(parsedDate, locale) : value
 }
 
-function formatNextUpdate(value: string) {
+function formatNextUpdate(value: string, locale: string) {
   const relativeDate = parseRelativeDuration(value)
   if (relativeDate) {
-    return formatDateTime(relativeDate)
+    return formatDateTime(relativeDate, locale)
   }
 
   const parsedDate = parseDateTime(value)
   if (parsedDate) {
-    return formatDateTime(parsedDate)
+    return formatDateTime(parsedDate, locale)
   }
 
   return value
 }
 
 export default function ServiceStatsSection() {
+  const locale = useLocale()
   const t = useTranslations("ServiceStatsSection")
-  const { data, error, isLoading } = useSWR<ServiceStats | null>("/api/service", nezhaFetcher, {
-    refreshInterval: 10_000,
-    dedupingInterval: 1_000,
-  })
+  const { data: serverData, error, isLoading } = useServerData()
 
   if (error) {
     return (
@@ -159,21 +158,21 @@ export default function ServiceStatsSection() {
     )
   }
 
-  if (isLoading && !data) {
-    return (
-      <div className="mt-4 flex items-center gap-1 font-medium text-sm">
-        <Loader visible={true} />
-        {t("loading")}
-      </div>
-    )
-  }
-
-  if (data === null) {
+  if (isLoading && !serverData) {
     return null
   }
 
-  const hasTraffic = (data?.cycleTransfers.length ?? 0) > 0
-  const hasMonitors = (data?.monitors.length ?? 0) > 0
+  if (!serverData) {
+    return null
+  }
+
+  const serviceStats = serverData.service_stats
+  if (serviceStats === null || serviceStats === undefined) {
+    return null
+  }
+
+  const hasTraffic = (serviceStats.cycleTransfers.length ?? 0) > 0
+  const hasMonitors = (serviceStats.monitors.length ?? 0) > 0
 
   if (!hasTraffic && !hasMonitors) {
     return (
@@ -188,14 +187,14 @@ export default function ServiceStatsSection() {
     <div className="mx-auto mt-4 w-full">
       {hasTraffic && (
         <section className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          {data?.cycleTransfers.map((transfer) => {
+          {serviceStats.cycleTransfers.map((transfer) => {
             const remainingPercent = clampPercent(transfer.transferLeftPercent)
             const usagePercent = clampPercent(100 - remainingPercent)
 
             return (
               <div
                 key={`${transfer.id}-${transfer.rule}-${transfer.serverName}-${transfer.from}`}
-                className="w-full rounded-lg border bg-card bg-white px-4 py-3.5 text-card-foreground transition-all duration-200 hover:shadow-xs dark:shadow-none"
+                className="w-full rounded-lg border bg-white bg-card px-4 py-3.5 text-card-foreground transition-all duration-200 hover:shadow-xs dark:shadow-none"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -222,19 +221,24 @@ export default function ServiceStatsSection() {
                       </span>
                     </div>
 
-                    <Progress
-                      value={usagePercent}
-                      indicatorClassName={getUsageIndicatorClass(remainingPercent)}
-                      className="h-1.5"
-                    />
+                    <div className="relative h-1.5">
+                      <div className="absolute inset-0 rounded-full bg-neutral-100 dark:bg-neutral-800" />
+                      <div
+                        className={cn(
+                          "absolute inset-y-0 left-0 rounded-full transition-all duration-300",
+                          getUsageIndicatorClass(remainingPercent),
+                        )}
+                        style={{ width: `${Math.min(usagePercent, 100)}%` }}
+                      />
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400">
                     <span>
-                      {formatCycleDate(transfer.from)} - {formatCycleDate(transfer.to)}
+                      {formatCycleDate(transfer.from, locale)} - {formatCycleDate(transfer.to, locale)}
                     </span>
                     <span>
-                      {t("nextUpdate")}: {formatNextUpdate(transfer.nextCheck)}
+                      {t("nextUpdate")}: {formatNextUpdate(transfer.nextCheck, locale)}
                     </span>
                   </div>
                 </div>
@@ -250,10 +254,10 @@ export default function ServiceStatsSection() {
             "mt-4 md:grid-cols-2": hasTraffic,
           })}
         >
-          {data?.monitors.map((monitor) => (
+          {serviceStats.monitors.map((monitor) => (
             <div
               key={`${monitor.type}-${monitor.name}`}
-              className="w-full space-y-3 rounded-lg border bg-card bg-white px-4 py-4 text-card-foreground shadow-lg shadow-neutral-200/40 dark:shadow-none"
+              className="w-full space-y-3 rounded-lg border bg-white bg-card px-4 py-4 text-card-foreground shadow-lg shadow-neutral-200/40 dark:shadow-none"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -293,7 +297,7 @@ export default function ServiceStatsSection() {
                       <TooltipTrigger asChild>
                         <div
                           className={cn(
-                            "relative h-7 flex-1 cursor-help rounded-[4px] transition-all duration-200 before:absolute before:inset-0 before:rounded-[4px] before:bg-white/10 before:opacity-0 before:transition-opacity hover:before:opacity-100",
+                            "relative h-7 flex-1 cursor-help rounded-[4px] transition-all duration-200 before:absolute before:inset-0 before:rounded-[4px] before:bg-white/10 before:opacity-0 before:transition-opacity hover:before:opacity-100 after:absolute after:inset-0 after:rounded-[4px] after:shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]",
                             getDayClass(point.availability),
                           )}
                         />

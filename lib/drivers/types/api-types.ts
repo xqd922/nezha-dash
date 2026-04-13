@@ -13,6 +13,7 @@ export type ServerApi = {
   total_out_speed: number
   total_in_speed: number
   result: NezhaAPISafe[]
+  service_stats?: ServiceStats | null
 }
 
 export type NezhaAPISafe = Omit<NezhaAPI, "ipv4" | "ipv6" | "valid_ip">
