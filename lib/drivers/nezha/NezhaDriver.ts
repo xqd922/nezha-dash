@@ -10,12 +10,12 @@ import type {
   DriverConfig,
   NezhaAPI,
   NezhaAPIMonitor,
+  ServerApi,
   ServiceCycleTransfer,
   ServiceMonitor,
   ServiceMonitorDailyPoint,
   ServiceMonitorStatus,
   ServiceStats,
-  ServerApi,
 } from "../types"
 import { DriverOperationError } from "../types"
 
@@ -31,6 +31,30 @@ type RawServiceMonitor = {
   Up?: Array<number | string>
   Down?: Array<number | string>
   Delay?: Array<number | string>
+}
+
+type NezhaWsServer = {
+  ID?: number | string
+  id?: number | string
+  PublicNote?: string
+  public_note?: string
+}
+
+type NezhaWsOptions = {
+  url: string
+  headers?: Record<string, string>
+}
+
+const PUBLIC_NOTE_CACHE_TTL_MS = 60_000
+
+const publicNoteCache: {
+  data: Map<number, string>
+  expiresAt: number
+  promise: Promise<Map<number, string>> | null
+} = {
+  data: new Map<number, string>(),
+  expiresAt: 0,
+  promise: null,
 }
 
 export class NezhaDriver extends BaseDriver {
@@ -73,6 +97,7 @@ export class NezhaDriver extends BaseDriver {
     }
 
     const nezhaData = resData.result as NezhaAPI[]
+    const publicNotes = await this.getCachedPublicNotes()
     const data: ServerApi = {
       live_servers: 0,
       offline_servers: 0,
@@ -91,6 +116,7 @@ export class NezhaDriver extends BaseDriver {
     const timestamp = Date.now() / 1000
     data.result = nezhaDataFiltered.map(
       (element: MakeOptional<NezhaAPI, "ipv4" | "ipv6" | "valid_ip">) => {
+        element.public_note = element.public_note || publicNotes.get(element.id) || ""
         const isOnline = timestamp - element.last_active <= 180
         element.online_status = isOnline
 
@@ -138,8 +164,10 @@ export class NezhaDriver extends BaseDriver {
     }
 
     const timestamp = Date.now() / 1000
+    const publicNotes = await this.getCachedPublicNotes()
     const detailData = detailDataList.map((element) => {
       element.online_status = timestamp - element.last_active <= 180
+      element.public_note = element.public_note || publicNotes.get(element.id) || ""
       element.ipv4 = ""
       element.ipv6 = ""
       element.valid_ip = ""
@@ -257,6 +285,170 @@ export class NezhaDriver extends BaseDriver {
     }
   }
 
+  private async getCachedPublicNotes(): Promise<Map<number, string>> {
+    const now = Date.now()
+    if (publicNoteCache.expiresAt > now) {
+      return publicNoteCache.data
+    }
+
+    if (publicNoteCache.promise) {
+      return publicNoteCache.promise
+    }
+
+    publicNoteCache.promise = this.fetchPublicNotes()
+      .then((notes) => {
+        publicNoteCache.data = notes
+        publicNoteCache.expiresAt = Date.now() + PUBLIC_NOTE_CACHE_TTL_MS
+        return notes
+      })
+      .catch((error) => {
+        console.warn("Failed to load Nezha public notes from websocket:", error)
+        publicNoteCache.data = new Map<number, string>()
+        publicNoteCache.expiresAt = Date.now() + PUBLIC_NOTE_CACHE_TTL_MS
+        return publicNoteCache.data
+      })
+      .finally(() => {
+        publicNoteCache.promise = null
+      })
+
+    return publicNoteCache.promise
+  }
+
+  private async fetchPublicNotes(): Promise<Map<number, string>> {
+    if (!this.config?.baseUrl || !this.authToken) {
+      return new Map<number, string>()
+    }
+
+    const wsBaseUrl = this.config.baseUrl.replace(/^http/i, "ws")
+    const token = this.authToken.trim()
+    const candidates: NezhaWsOptions[] = [
+      {
+        url: `${wsBaseUrl}/ws/server`,
+        headers: { Authorization: token },
+      },
+      {
+        url: `${wsBaseUrl}/api/v1/ws/server`,
+        headers: { Authorization: token },
+      },
+      {
+        url: `${wsBaseUrl}/ws?token=${encodeURIComponent(token)}`,
+      },
+      {
+        url: `${wsBaseUrl}/ws`,
+        headers: { Authorization: token },
+      },
+      {
+        url: `${wsBaseUrl}/ws`,
+      },
+    ]
+
+    for (const candidate of candidates) {
+      const publicNotes = await this.readPublicNotesFromWebSocket(candidate)
+      if (publicNotes.size > 0) {
+        return publicNotes
+      }
+    }
+
+    return new Map<number, string>()
+  }
+
+  private async readPublicNotesFromWebSocket({
+    url,
+    headers,
+  }: NezhaWsOptions): Promise<Map<number, string>> {
+    const wsModule = await import("ws")
+    const WebSocketClient = wsModule.WebSocket ?? wsModule.default
+    if (!WebSocketClient) {
+      return new Map<number, string>()
+    }
+
+    return new Promise((resolve) => {
+      let settled = false
+      let ws: InstanceType<typeof WebSocketClient> | null = null
+
+      const finalize = (publicNotes = new Map<number, string>()) => {
+        if (settled) {
+          return
+        }
+
+        settled = true
+        clearTimeout(timeoutId)
+        try {
+          ws?.terminate()
+        } catch {
+          // Ignore websocket cleanup errors.
+        }
+        resolve(publicNotes)
+      }
+
+      const timeoutId = setTimeout(() => finalize(), 10_000)
+
+      try {
+        ws = new WebSocketClient(url, {
+          headers,
+          handshakeTimeout: 8_000,
+        })
+      } catch {
+        finalize()
+        return
+      }
+
+      ws.once("message", (message) => {
+        finalize(this.extractPublicNotes(message.toString()))
+      })
+      ws.once("unexpected-response", () => {
+        finalize()
+      })
+      ws.once("error", () => {
+        finalize()
+      })
+      ws.once("close", () => {
+        finalize()
+      })
+    })
+  }
+
+  private extractPublicNotes(rawMessage: string): Map<number, string> {
+    let payload: unknown
+
+    try {
+      payload = JSON.parse(rawMessage)
+    } catch {
+      return new Map<number, string>()
+    }
+
+    if (!payload || typeof payload !== "object") {
+      return new Map<number, string>()
+    }
+
+    const payloadObject = payload as {
+      servers?: NezhaWsServer[]
+      result?: NezhaWsServer[]
+    }
+    const servers = Array.isArray(payloadObject.servers)
+      ? payloadObject.servers
+      : Array.isArray(payloadObject.result)
+        ? payloadObject.result
+        : []
+
+    return servers.reduce((notes, server) => {
+      const idValue = server.id ?? server.ID
+      const serverId =
+        typeof idValue === "number"
+          ? idValue
+          : typeof idValue === "string"
+            ? Number.parseInt(idValue, 10)
+            : Number.NaN
+      const publicNote = server.public_note ?? server.PublicNote ?? ""
+
+      if (Number.isFinite(serverId) && typeof publicNote === "string" && publicNote.trim()) {
+        notes.set(serverId, publicNote)
+      }
+
+      return notes
+    }, new Map<number, string>())
+  }
+
   private parseServiceMonitors(html: string): ServiceMonitor[] {
     const payload = this.extractBalancedAssignment(html, "services")
     if (!payload) {
@@ -291,7 +483,9 @@ export class NezhaDriver extends BaseDriver {
     }
 
     const type = this.toNumber(service.Monitor?.Type)
-    const delays = Array.isArray(service.Delay) ? service.Delay.map((value) => this.toNumber(value)) : []
+    const delays = Array.isArray(service.Delay)
+      ? service.Delay.map((value) => this.toNumber(value))
+      : []
     const up = Array.isArray(service.Up) ? service.Up.map((value) => this.toNumber(value)) : []
     const down = Array.isArray(service.Down)
       ? service.Down.map((value) => this.toNumber(value))
@@ -413,7 +607,7 @@ export class NezhaDriver extends BaseDriver {
         continue
       }
 
-      if (char === "\"" || char === "'" || char === "`") {
+      if (char === '"' || char === "'" || char === "`") {
         quote = char
         continue
       }
@@ -507,7 +701,9 @@ export class NezhaDriver extends BaseDriver {
   }
 
   private stripHtml(html: string): string {
-    return this.decodeHtmlEntities(html.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim()
+    return this.decodeHtmlEntities(html.replace(/<[^>]+>/g, " "))
+      .replace(/\s+/g, " ")
+      .trim()
   }
 
   private decodeHtmlEntities(value: string): string {
@@ -516,7 +712,7 @@ export class NezhaDriver extends BaseDriver {
       .replace(/&amp;/g, "&")
       .replace(/&lt;/g, "<")
       .replace(/&gt;/g, ">")
-      .replace(/&quot;/g, "\"")
+      .replace(/&quot;/g, '"')
       .replace(/&#39;/g, "'")
   }
 

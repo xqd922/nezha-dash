@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card"
 import type { NezhaAPISafe } from "@/lib/drivers/types"
 import getEnv from "@/lib/env-entry"
 import { GetFontLogoClass, GetOsName, MageMicrosoftWindows } from "@/lib/logo-class"
-import { cn, formatBytes, formatNezhaInfo, parsePublicNote } from "@/lib/utils"
+import { cn, formatBytes, formatNezhaInfo, formatSpeed, parsePublicNote } from "@/lib/utils"
 
 import { Separator } from "./ui/separator"
 
@@ -97,15 +97,11 @@ export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPIS
             </div>
             <div className={"flex w-16 flex-col"}>
               <p className="text-muted-foreground text-xs">{t("Upload")}</p>
-              <div className="flex items-center font-semibold text-xs">
-                {up >= 1024 ? `${(up / 1024).toFixed(2)}G/s` : `${up.toFixed(2)}M/s`}
-              </div>
+              <div className="flex items-center font-semibold text-xs">{formatSpeed(up)}</div>
             </div>
             <div className={"flex w-16 flex-col"}>
               <p className="text-muted-foreground text-xs">{t("Download")}</p>
-              <div className="flex items-center font-semibold text-xs">
-                {down >= 1024 ? `${(down / 1024).toFixed(2)}G/s` : `${down.toFixed(2)}M/s`}
-              </div>
+              <div className="flex items-center font-semibold text-xs">{formatSpeed(down)}</div>
             </div>
             <div className={"flex w-20 flex-col"}>
               <p className="text-muted-foreground text-xs">{t("TotalUpload")}</p>

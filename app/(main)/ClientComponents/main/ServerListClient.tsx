@@ -129,27 +129,52 @@ export default function ServerListClient() {
   const [showMap, setShowMap] = useState<boolean>(false)
   const [showServices, setShowServices] = useState<string>("0")
   const [inline, setInline] = useState<string>("0")
+  const forceShowMap = getEnv("NEXT_PUBLIC_ForceShowMap") === "true"
+  const forceShowServices = getEnv("NEXT_PUBLIC_ForceShowServices") === "true"
+  const forceCardInline = getEnv("NEXT_PUBLIC_ForceCardInline") === "true"
 
   useEffect(() => {
-    const inlineState = localStorage.getItem("inline")
-    if (inlineState !== null) {
-      setInline(inlineState)
-    }
-
     const showMapState = localStorage.getItem("showMap")
-    if (showMapState !== null) {
+    if (forceShowMap) {
+      setShowMap(true)
+    } else if (showMapState !== null) {
       setShowMap(showMapState === "true")
     }
 
     const showServicesState = localStorage.getItem("showServices")
-    if (showServicesState !== null) {
+    if (forceShowServices) {
+      setShowServices("1")
+    } else if (showServicesState !== null) {
       setShowServices(showServicesState)
     }
 
     const savedTag = sessionStorage.getItem("selectedTag") || defaultTag
     setTag(savedTag)
     restoreScrollPosition()
-  }, [])
+  }, [forceShowMap, forceShowServices])
+
+  useEffect(() => {
+    const syncInlineLayout = () => {
+      if (window.innerWidth < 768) {
+        setInline("0")
+        return
+      }
+
+      const inlineState = localStorage.getItem("inline")
+      if (forceCardInline) {
+        setInline("1")
+      } else if (inlineState !== null) {
+        setInline(inlineState)
+      }
+    }
+
+    syncInlineLayout()
+    window.addEventListener("resize", syncInlineLayout)
+
+    return () => {
+      window.removeEventListener("resize", syncInlineLayout)
+    }
+  }, [forceCardInline])
 
   const handleTagChange = (newTag: string) => {
     setTag(newTag)

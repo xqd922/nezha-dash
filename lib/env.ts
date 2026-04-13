@@ -28,6 +28,12 @@ export interface ServerEnvConfig {
 export interface ClientEnvConfig {
   /** Nezha data fetch interval in milliseconds */
   NezhaFetchInterval: number
+  /** Force show global map by default */
+  ForceShowMap: boolean
+  /** Force show services by default */
+  ForceShowServices: boolean
+  /** Force desktop inline cards by default */
+  ForceCardInline: boolean
   /** Show country flags */
   ShowFlag: boolean
   /** Disable cartoon effects */
@@ -142,6 +148,9 @@ export function getAllEnvConfig(): { server: ServerEnvConfig; client: ClientEnvC
     },
     client: {
       NezhaFetchInterval: parseNumber(getClientEnv("NezhaFetchInterval"), 5000),
+      ForceShowMap: parseBoolean(getClientEnv("ForceShowMap")),
+      ForceShowServices: parseBoolean(getClientEnv("ForceShowServices")),
+      ForceCardInline: parseBoolean(getClientEnv("ForceCardInline")),
       ShowFlag: parseBoolean(getClientEnv("ShowFlag")),
       DisableCartoon: parseBoolean(getClientEnv("DisableCartoon")),
       ShowTag: parseBoolean(getClientEnv("ShowTag")),

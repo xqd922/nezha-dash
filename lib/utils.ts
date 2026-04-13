@@ -68,6 +68,18 @@ export function formatBytes(bytes: number, decimals = 2) {
   return `${Number.parseFloat((bytes / k ** i).toFixed(dm))} ${sizes[i]}`
 }
 
+export function formatSpeed(valueInMiB: number): string {
+  if (valueInMiB >= 1024) {
+    return `${(valueInMiB / 1024).toFixed(2)}G/s`
+  }
+
+  if (valueInMiB >= 1) {
+    return `${valueInMiB.toFixed(2)}M/s`
+  }
+
+  return `${(valueInMiB * 1024).toFixed(2)}K/s`
+}
+
 export function getDaysBetweenDates(date1: string, date2: string): number {
   const oneDay = 24 * 60 * 60 * 1000 // 一天的毫秒数
   const firstDate = new Date(date1)
@@ -326,7 +338,10 @@ export function getDaysBetweenDatesWithAutoRenewal({
   }
 
   const nextTime = getNextCycleTime(endTime, months, nowTime)
-  const diff = getDaysBetweenDates(new Date(nextTime).toISOString(), new Date(nowTime).toISOString())
+  const diff = getDaysBetweenDates(
+    new Date(nextTime).toISOString(),
+    new Date(nowTime).toISOString(),
+  )
   return {
     days: diff,
     cycleLabel,
