@@ -38,6 +38,7 @@ export class MyNodeQueryDriver extends BaseDriver {
       supportsHistoricalData: false,
       supportsIpInfo: true,
       supportsPacketLoss: false,
+      supportsServiceStats: false,
       supportsAlerts: false,
     })
   }
@@ -81,7 +82,12 @@ export class MyNodeQueryDriver extends BaseDriver {
 
     const serverPromises = nodeList.map(async (node, index) => {
       const overview = await this.getOverviewWithCache(node.UniqueID)
-      const nezhaServer = this.convertNodeToNezha(node, overview, timestamp, nodeList.length - index)
+      const nezhaServer = this.convertNodeToNezha(
+        node,
+        overview,
+        timestamp,
+        nodeList.length - index,
+      )
 
       if (nezhaServer.online_status) {
         data.live_servers += 1

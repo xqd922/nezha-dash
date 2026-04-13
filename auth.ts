@@ -1,34 +1,43 @@
-import CryptoJS from "crypto-js"
+import { createHash, timingSafeEqual } from "node:crypto"
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import getEnv from "@/lib/env-entry"
 
+function safeEqual(a: string, b: string): boolean {
+  try {
+    const bufA = Buffer.isBuffer(a) ? a : Buffer.from(a)
+    const bufB = Buffer.isBuffer(b) ? b : Buffer.from(b)
+
+    const hashA = createHash("sha256").update(bufA).digest()
+    const hashB = createHash("sha256").update(bufB).digest()
+
+    return timingSafeEqual(hashA, hashB)
+  } catch (_err) {
+    return false
+  }
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   secret:
     process.env.AUTH_SECRET ??
-    CryptoJS.MD5(`this_is_nezha_dash_web_secret_${getEnv("SitePassword")}`).toString(),
-  trustHost: (process.env.AUTH_TRUST_HOST as boolean | undefined) ?? true,
+    createHash("sha256")
+      .update(`this_is_nezha_dash_web_secret_${getEnv("SitePassword")}`)
+      .digest("hex"),
+  trustHost: process.env.AUTH_TRUST_HOST ? process.env.AUTH_TRUST_HOST === "true" : true,
   providers: [
     CredentialsProvider({
       type: "credentials",
       credentials: { password: { label: "Password", type: "password" } },
-      // authorization function
       async authorize(credentials) {
-        const { password } = credentials
-        if (password === getEnv("SitePassword")) {
+        const password = typeof credentials?.password === "string" ? credentials.password : ""
+
+        const sitePassword = getEnv("SitePassword")
+        if (sitePassword && safeEqual(password, sitePassword)) {
           return { id: "nezha-dash-auth" }
         }
-        return { error: "Invalid password" }
+
+        return null
       },
     }),
   ],
-  callbacks: {
-    async signIn({ user }) {
-      // @ts-expect-error user is not null
-      if (user.error) {
-        return false
-      }
-      return true
-    },
-  },
 })

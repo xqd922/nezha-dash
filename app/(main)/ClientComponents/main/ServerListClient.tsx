@@ -1,9 +1,9 @@
 "use client"
 
-import { MapIcon, ViewColumnsIcon } from "@heroicons/react/20/solid"
+import { ChartBarSquareIcon, MapIcon, ViewColumnsIcon } from "@heroicons/react/20/solid"
 import dynamic from "next/dynamic"
 import { useTranslations } from "next-intl"
-import { useEffect, useRef, useState } from "react"
+import { type RefObject, useEffect, useRef, useState } from "react"
 import { useFilter } from "@/app/context/network-filter-context"
 import { useServerData } from "@/app/context/server-data-context"
 import { useStatus } from "@/app/context/status-context"
@@ -13,6 +13,7 @@ import ServerCard from "@/components/ServerCard"
 import ServerCardInline from "@/components/ServerCardInline"
 import Switch from "@/components/Switch"
 import ShinyText from "@/components/ui/shiny-text"
+import type { ServerApi } from "@/lib/drivers/types"
 import getEnv from "@/lib/env-entry"
 import { cn } from "@/lib/utils"
 
@@ -20,25 +21,34 @@ const ServerGlobal = dynamic(() => import("./Global"), {
   ssr: false,
   loading: () => <GlobalLoading />,
 })
+const ServiceStatsSection = dynamic(() => import("./ServiceStatsSection"), {
+  ssr: false,
+})
 
-const sortServersByDisplayIndex = (servers: any[]) => {
-  return servers.sort((a, b) => {
+type ServerItem = ServerApi["result"][number]
+type TranslationFn = ReturnType<typeof useTranslations>
+
+const sortServersByDisplayIndex = (servers: ServerItem[]) => {
+  return [...servers].sort((a, b) => {
     const displayIndexDiff = (b.display_index || 0) - (a.display_index || 0)
     return displayIndexDiff !== 0 ? displayIndexDiff : a.id - b.id
   })
 }
 
-const filterServersByStatus = (servers: any[], status: string) => {
+const filterServersByStatus = (
+  servers: ServerItem[],
+  status: ReturnType<typeof useStatus>["status"],
+) => {
   return status === "all"
     ? servers
     : servers.filter((server) => [status].includes(server.online_status ? "online" : "offline"))
 }
 
-const filterServersByTag = (servers: any[], tag: string, defaultTag: string) => {
+const filterServersByTag = (servers: ServerItem[], tag: string, defaultTag: string) => {
   return tag === defaultTag ? servers : servers.filter((server) => server.tag === tag)
 }
 
-const sortServersByNetwork = (servers: any[]) => {
+const sortServersByNetwork = (servers: ServerItem[]) => {
   return [...servers].sort((a, b) => {
     if (!a.online_status && b.online_status) return 1
     if (a.online_status && !b.online_status) return -1
@@ -47,7 +57,7 @@ const sortServersByNetwork = (servers: any[]) => {
   })
 }
 
-const getTagCounts = (servers: any[]) => {
+const getTagCounts = (servers: ServerItem[]) => {
   return servers.reduce((acc: Record<string, number>, server) => {
     if (server.tag) {
       acc[server.tag] = (acc[server.tag] || 0) + 1
@@ -56,7 +66,7 @@ const getTagCounts = (servers: any[]) => {
   }, {})
 }
 
-const LoadingState = ({ t }: { t: any }) => (
+const LoadingState = ({ t }: { t: TranslationFn }) => (
   <div className="flex min-h-96 flex-col items-center justify-center">
     <div className="flex items-center gap-2 font-semibold text-sm">
       <ShinyText
@@ -70,7 +80,7 @@ const LoadingState = ({ t }: { t: any }) => (
   </div>
 )
 
-const ErrorState = ({ error, t }: { error: Error; t: any }) => (
+const ErrorState = ({ error, t }: { error: Error; t: TranslationFn }) => (
   <div className="flex flex-col items-center justify-center">
     <p className="font-medium text-sm opacity-40">{error.message}</p>
     <p className="font-medium text-sm opacity-40">{t("error_message")}</p>
@@ -82,15 +92,15 @@ const ServerList = ({
   inline,
   containerRef,
 }: {
-  servers: any[]
+  servers: ServerItem[]
   inline: string
-  containerRef: any
+  containerRef: RefObject<HTMLElement | null>
 }) => {
   if (inline === "1") {
     return (
       <section
         ref={containerRef}
-        className="scrollbar-hidden flex flex-col gap-2 overflow-x-scroll"
+        className="scrollbar-hidden mt-6 flex flex-col gap-2 overflow-x-scroll p-px"
       >
         {servers.map((serverInfo) => (
           <ServerCardInline key={serverInfo.id} serverInfo={serverInfo} />
@@ -100,7 +110,7 @@ const ServerList = ({
   }
 
   return (
-    <section ref={containerRef} className="grid grid-cols-1 gap-2 md:grid-cols-2">
+    <section ref={containerRef} className="mt-6 grid grid-cols-1 gap-2 md:grid-cols-2">
       {servers.map((serverInfo) => (
         <ServerCard key={serverInfo.id} serverInfo={serverInfo} />
       ))}
@@ -112,11 +122,12 @@ export default function ServerListClient() {
   const { status } = useStatus()
   const { filter } = useFilter()
   const t = useTranslations("ServerListClient")
-  const containerRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLElement>(null)
   const defaultTag = "defaultTag"
 
   const [tag, setTag] = useState<string>(defaultTag)
   const [showMap, setShowMap] = useState<boolean>(false)
+  const [showServices, setShowServices] = useState<string>("0")
   const [inline, setInline] = useState<string>("0")
 
   useEffect(() => {
@@ -128,6 +139,11 @@ export default function ServerListClient() {
     const showMapState = localStorage.getItem("showMap")
     if (showMapState !== null) {
       setShowMap(showMapState === "true")
+    }
+
+    const showServicesState = localStorage.getItem("showServices")
+    if (showServicesState !== null) {
+      setShowServices(showServicesState)
     }
 
     const savedTag = sessionStorage.getItem("selectedTag") || defaultTag
@@ -181,7 +197,7 @@ export default function ServerListClient() {
 
   return (
     <>
-      <section className="flex w-full items-center gap-2 overflow-hidden">
+      <section className="mt-6 flex w-full items-center gap-2 overflow-hidden">
         <button
           type="button"
           onClick={() => {
@@ -190,7 +206,7 @@ export default function ServerListClient() {
             localStorage.setItem("showMap", String(newShowMap))
           }}
           className={cn(
-            "inset-shadow-2xs inset-shadow-white/20 flex cursor-pointer flex-col items-center gap-0 rounded-[50px] bg-blue-100 p-[10px] text-blue-600 transition-all dark:bg-blue-900 dark:text-blue-100",
+            "inset-shadow-2xs inset-shadow-white/20 flex cursor-pointer flex-col items-center gap-0 rounded-[50px] bg-blue-100 p-2.5 text-blue-600 transition-all dark:bg-blue-900 dark:text-blue-100",
             {
               "inset-shadow-black/20 bg-blue-600 text-white dark:bg-blue-100 dark:text-blue-600":
                 showMap,
@@ -202,12 +218,29 @@ export default function ServerListClient() {
         <button
           type="button"
           onClick={() => {
+            const newShowServices = showServices === "0" ? "1" : "0"
+            setShowServices(newShowServices)
+            localStorage.setItem("showServices", newShowServices)
+          }}
+          className={cn(
+            "inset-shadow-2xs inset-shadow-white/20 flex cursor-pointer flex-col items-center gap-0 rounded-[50px] bg-blue-100 p-2.5 text-blue-600 transition-all dark:bg-blue-900 dark:text-blue-100",
+            {
+              "inset-shadow-black/20 bg-blue-600 text-white dark:bg-blue-100 dark:text-blue-600":
+                showServices === "1",
+            },
+          )}
+        >
+          <ChartBarSquareIcon className="size-[13px]" />
+        </button>
+        <button
+          type="button"
+          onClick={() => {
             const newInline = inline === "0" ? "1" : "0"
             setInline(newInline)
             localStorage.setItem("inline", newInline)
           }}
           className={cn(
-            "inset-shadow-2xs inset-shadow-white/20 flex cursor-pointer flex-col items-center gap-0 rounded-[50px] bg-blue-100 p-[10px] text-blue-600 transition-all dark:bg-blue-900 dark:text-blue-100",
+            "inset-shadow-2xs inset-shadow-white/20 flex cursor-pointer flex-col items-center gap-0 rounded-[50px] bg-blue-100 p-2.5 text-blue-600 transition-all dark:bg-blue-900 dark:text-blue-100",
             {
               "inset-shadow-black/20 bg-blue-600 text-white dark:bg-blue-100 dark:text-blue-600":
                 inline === "1",
@@ -226,6 +259,7 @@ export default function ServerListClient() {
         )}
       </section>
       {showMap && <ServerGlobal />}
+      {showServices === "1" && <ServiceStatsSection />}
       <ServerList servers={filteredServers} inline={inline} containerRef={containerRef} />
     </>
   )

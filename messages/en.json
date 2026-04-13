@@ -71,7 +71,8 @@
   "NetworkChart": {
     "avg_delay": "Latency",
     "packet_loss": "Packet Loss",
-    "ServerMonitorCount": "Services"
+    "ServerMonitorCount": "Services",
+    "peak_cut": "Peak Cut"
   },
   "ServerDetailClient": {
     "detail_fetch_error_message": "Please check your environment variables and review the server console",
@@ -157,5 +158,40 @@
     "ToggleSystemMode": "Toggle System Mode",
     "Home": "Home",
     "NetworkCharts": "Network Charts"
+  },
+  "ServiceStatsSection": {
+    "title": "Service",
+    "description": "Inline Nezha service availability and monthly traffic statistics.",
+    "error": "Failed to load service statistics.",
+    "empty": "No service statistics are currently available.",
+    "loading": "Loading...",
+    "monthlyTraffic": "Monthly traffic",
+    "monthlyTrafficDescription": "Cycle transfer stats are kept by the backend and do not reset after a server restart.",
+    "serviceMonitor": "Service monitor",
+    "serviceMonitorDescription": "Availability is calculated with the same logic as the Nezha v0 service page.",
+    "monthlyTrafficCount": "{count} traffic rules",
+    "serviceMonitorCount": "{count} service monitors",
+    "periodValue": "{from} to {to}",
+    "max": "Max",
+    "min": "Min",
+    "nextCheck": "Next check",
+    "nextUpdate": "Next update",
+    "currentUsage": "Current usage",
+    "remaining": "Remaining",
+    "averageLatency": "Average latency",
+    "availabilityCurrent": "Current availability",
+    "availability30d": "30-day availability",
+    "uptime": "Uptime",
+    "delay": "Delay",
+    "daysAgo": "days ago",
+    "today": "Today",
+    "latencyValue": "{value} ms",
+    "percentageValue": "{value}%",
+    "dailyTooltip": "{label} · {availability}% · {delay}ms",
+    "dailyLegend": "Each block represents one day of service health.",
+    "status_good": "Good",
+    "status_warning": "Warning",
+    "status_danger": "Down",
+    "status_nodata": "No data"
   }
 }

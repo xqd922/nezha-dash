@@ -6,8 +6,32 @@ import { connection } from "next/server"
 import type { MakeOptional } from "@/app/types/utils"
 import getEnv from "@/lib/env-entry"
 import { BaseDriver } from "../base"
-import type { DriverConfig, NezhaAPI, NezhaAPIMonitor, ServerApi } from "../types"
+import type {
+  DriverConfig,
+  NezhaAPI,
+  NezhaAPIMonitor,
+  ServiceCycleTransfer,
+  ServiceMonitor,
+  ServiceMonitorDailyPoint,
+  ServiceMonitorStatus,
+  ServiceStats,
+  ServerApi,
+} from "../types"
 import { DriverOperationError } from "../types"
+
+type RawServiceMonitor = {
+  Monitor?: {
+    Type?: number
+    Name?: string
+  }
+  CurrentUp?: number | string
+  CurrentDown?: number | string
+  TotalUp?: number | string
+  TotalDown?: number | string
+  Up?: Array<number | string>
+  Down?: Array<number | string>
+  Delay?: Array<number | string>
+}
 
 export class NezhaDriver extends BaseDriver {
   private authToken: string | null = null
@@ -19,6 +43,7 @@ export class NezhaDriver extends BaseDriver {
       supportsHistoricalData: true,
       supportsIpInfo: true,
       supportsPacketLoss: true,
+      supportsServiceStats: true,
       supportsAlerts: false,
     })
   }
@@ -189,6 +214,35 @@ export class NezhaDriver extends BaseDriver {
     return server?.valid_ip || server?.ipv4 || server?.ipv6 || ""
   }
 
+  protected async onGetServiceStats(): Promise<ServiceStats | null> {
+    await connection()
+    this.ensureInitialized()
+
+    const response = await fetch(`${this.config?.baseUrl}/service`, {
+      ...this.createFetchOptions({
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        Authorization: this.authToken || "",
+      }),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new DriverOperationError(
+        this.name,
+        "getServiceStats",
+        `HTTP ${response.status}: ${errorText}`,
+      )
+    }
+
+    const html = await response.text()
+
+    return {
+      fetchedAt: Date.now(),
+      monitors: this.parseServiceMonitors(html),
+      cycleTransfers: this.parseCycleTransfers(html),
+    }
+  }
+
   protected async onHealthCheck(): Promise<void> {
     this.ensureInitialized()
 
@@ -201,5 +255,281 @@ export class NezhaDriver extends BaseDriver {
     if (!response.ok) {
       throw new DriverOperationError(this.name, "healthCheck", `HTTP ${response.status}`)
     }
+  }
+
+  private parseServiceMonitors(html: string): ServiceMonitor[] {
+    const payload = this.extractBalancedAssignment(html, "services")
+    if (!payload) {
+      return []
+    }
+
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(payload)
+    } catch (error) {
+      console.warn("Failed to parse Nezha service monitor payload:", error)
+      return []
+    }
+
+    if (!parsed || typeof parsed !== "object") {
+      return []
+    }
+
+    const rawMonitors = Array.isArray(parsed)
+      ? parsed
+      : Object.values(parsed as Record<string, RawServiceMonitor>)
+
+    return rawMonitors
+      .map((item) => this.normalizeServiceMonitor(item as RawServiceMonitor))
+      .filter((item): item is ServiceMonitor => item !== null)
+  }
+
+  private normalizeServiceMonitor(service: RawServiceMonitor): ServiceMonitor | null {
+    const name = service.Monitor?.Name?.trim()
+    if (!name) {
+      return null
+    }
+
+    const type = this.toNumber(service.Monitor?.Type)
+    const delays = Array.isArray(service.Delay) ? service.Delay.map((value) => this.toNumber(value)) : []
+    const up = Array.isArray(service.Up) ? service.Up.map((value) => this.toNumber(value)) : []
+    const down = Array.isArray(service.Down)
+      ? service.Down.map((value) => this.toNumber(value))
+      : []
+
+    const currentAvailability = this.calculateAvailabilityPercent(
+      service.CurrentUp,
+      service.CurrentDown,
+    )
+    const availability = this.calculateAvailabilityPercent(service.TotalUp, service.TotalDown)
+    const averageDelay = this.calculateAverageDelay(delays)
+    const status = this.getMonitorStatus(currentAvailability)
+    const daily = this.buildDailyPoints(up, down, delays)
+
+    return {
+      type,
+      typeLabel: this.getServiceTypeLabel(type),
+      name,
+      currentAvailability,
+      availability,
+      averageDelay,
+      status,
+      daily,
+    }
+  }
+
+  private buildDailyPoints(
+    up: number[],
+    down: number[],
+    delays: number[],
+  ): ServiceMonitorDailyPoint[] {
+    const length = Math.max(up.length, down.length, delays.length)
+    const points: ServiceMonitorDailyPoint[] = []
+
+    for (let index = 0; index < length; index += 1) {
+      const availability = this.calculateAvailabilityPercent(up[index], down[index])
+      points.push({
+        label: this.getDaysAgoLabel(length - index - 1),
+        availability,
+        delay: this.toNumber(delays[index]),
+        status: this.getMonitorStatus(availability),
+      })
+    }
+
+    return points
+  }
+
+  private parseCycleTransfers(html: string): ServiceCycleTransfer[] {
+    const rowMatches = [...html.matchAll(/<tr>([\s\S]*?)<\/tr>/g)]
+
+    return rowMatches
+      .map((match) => this.extractCycleTransferRow(match[1]))
+      .filter((row): row is ServiceCycleTransfer => row !== null)
+  }
+
+  private extractCycleTransferRow(rowHtml: string): ServiceCycleTransfer | null {
+    const columns = [...rowHtml.matchAll(/<td\b[^>]*>([\s\S]*?)<\/td>/g)].map((match) =>
+      this.stripHtml(match[1]),
+    )
+
+    if (columns.length !== 10 || !/^\d+$/.test(columns[0])) {
+      return null
+    }
+
+    const transferLeftPercentMatch = columns[9].match(/\/\s*([\d.]+)\s*%/)
+
+    return {
+      id: Number.parseInt(columns[0], 10),
+      rule: columns[1],
+      serverName: columns[2],
+      from: columns[3],
+      to: columns[4],
+      max: columns[5],
+      min: columns[6],
+      nextCheck: columns[7],
+      currentUsage: columns[8],
+      transferLeft: columns[9],
+      transferLeftPercent: this.toNumber(transferLeftPercentMatch?.[1]),
+    }
+  }
+
+  private extractBalancedAssignment(source: string, key: string): string | null {
+    const keyIndex = source.indexOf(`${key}:`)
+    if (keyIndex === -1) {
+      return null
+    }
+
+    let startIndex = keyIndex + key.length + 1
+    while (startIndex < source.length && /\s/.test(source[startIndex])) {
+      startIndex += 1
+    }
+
+    const firstChar = source[startIndex]
+    if (firstChar !== "{" && firstChar !== "[") {
+      return null
+    }
+
+    const stack: string[] = [firstChar === "{" ? "}" : "]"]
+    let quote: string | null = null
+    let isEscaped = false
+
+    for (let index = startIndex + 1; index < source.length; index += 1) {
+      const char = source[index]
+
+      if (quote) {
+        if (isEscaped) {
+          isEscaped = false
+          continue
+        }
+
+        if (char === "\\") {
+          isEscaped = true
+          continue
+        }
+
+        if (char === quote) {
+          quote = null
+        }
+        continue
+      }
+
+      if (char === "\"" || char === "'" || char === "`") {
+        quote = char
+        continue
+      }
+
+      if (char === "{") {
+        stack.push("}")
+        continue
+      }
+
+      if (char === "[") {
+        stack.push("]")
+        continue
+      }
+
+      const expected = stack[stack.length - 1]
+      if (char === expected) {
+        stack.pop()
+        if (stack.length === 0) {
+          return source.slice(startIndex, index + 1)
+        }
+      }
+    }
+
+    return null
+  }
+
+  private calculateAvailabilityPercent(
+    up: number | string | undefined,
+    down: number | string | undefined,
+  ): number {
+    const currentUp = this.toNumber(up)
+    const currentDown = this.toNumber(down)
+    const total = currentUp + currentDown
+
+    if (total === 0) {
+      return currentUp > 0 ? 100 : 0
+    }
+
+    if (currentUp === 0) {
+      return Number.parseFloat(((0.00001 / total) * 100).toFixed(5))
+    }
+
+    return Number.parseFloat(((currentUp / total) * 100).toFixed(2))
+  }
+
+  private calculateAverageDelay(delays: number[]): number {
+    const nonZeroDelays = delays.filter((value) => value > 0)
+    if (nonZeroDelays.length === 0) {
+      return 0
+    }
+
+    const total = nonZeroDelays.reduce((sum, value) => sum + value, 0)
+    return Number.parseFloat((total / nonZeroDelays.length).toFixed(2))
+  }
+
+  private getMonitorStatus(percent: number): ServiceMonitorStatus {
+    if (percent === 0) {
+      return "nodata"
+    }
+
+    if (percent > 95) {
+      return "good"
+    }
+
+    if (percent > 80) {
+      return "warning"
+    }
+
+    return "danger"
+  }
+
+  private getServiceTypeLabel(type: number): string {
+    switch (type) {
+      case 1:
+        return "HTTP GET"
+      case 2:
+        return "ICMP Ping"
+      case 3:
+        return "TCP Ping"
+      default:
+        return "Service"
+    }
+  }
+
+  private getDaysAgoLabel(daysAgo: number): string {
+    const date = new Date()
+    date.setDate(date.getDate() - daysAgo)
+    const month = `${date.getMonth() + 1}`.padStart(2, "0")
+    const day = `${date.getDate()}`.padStart(2, "0")
+    return `${month}-${day}`
+  }
+
+  private stripHtml(html: string): string {
+    return this.decodeHtmlEntities(html.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim()
+  }
+
+  private decodeHtmlEntities(value: string): string {
+    return value
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, "\"")
+      .replace(/&#39;/g, "'")
+  }
+
+  private toNumber(value: number | string | undefined): number {
+    if (typeof value === "number") {
+      return Number.isFinite(value) ? value : 0
+    }
+
+    if (typeof value !== "string") {
+      return 0
+    }
+
+    const parsed = Number.parseFloat(value)
+    return Number.isFinite(parsed) ? parsed : 0
   }
 }

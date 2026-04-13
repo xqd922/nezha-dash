@@ -13,6 +13,7 @@ export type ServerApi = {
   total_out_speed: number
   total_in_speed: number
   result: NezhaAPISafe[]
+  service_stats?: ServiceStats | null
 }
 
 export type NezhaAPISafe = Omit<NezhaAPI, "ipv4" | "ipv6" | "valid_ip">
@@ -83,6 +84,46 @@ export interface NezhaAPIMonitor {
   created_at: number[]
   avg_delay: number[]
   packet_loss?: number[]
+}
+
+export type ServiceMonitorStatus = "good" | "warning" | "danger" | "nodata"
+
+export interface ServiceMonitorDailyPoint {
+  label: string
+  availability: number
+  delay: number
+  status: ServiceMonitorStatus
+}
+
+export interface ServiceMonitor {
+  type: number
+  typeLabel: string
+  name: string
+  currentAvailability: number
+  availability: number
+  averageDelay: number
+  status: ServiceMonitorStatus
+  daily: ServiceMonitorDailyPoint[]
+}
+
+export interface ServiceCycleTransfer {
+  id: number
+  rule: string
+  serverName: string
+  from: string
+  to: string
+  max: string
+  min: string
+  nextCheck: string
+  currentUsage: string
+  transferLeft: string
+  transferLeftPercent: number
+}
+
+export interface ServiceStats {
+  fetchedAt: number
+  monitors: ServiceMonitor[]
+  cycleTransfers: ServiceCycleTransfer[]
 }
 
 // Komari API types

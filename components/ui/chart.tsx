@@ -175,7 +175,7 @@ const ChartTooltipContent = React.forwardRef<
         )}
       >
         {!nestLabel && (
-          <div className="-mb-1 mx-auto px-2.5 pt-1">{!nestLabel ? tooltipLabel : null}</div>
+          <div className="mx-auto -mb-1 px-2.5 pt-1">{!nestLabel ? tooltipLabel : null}</div>
         )}
 
         <div
@@ -342,9 +342,9 @@ function getPayloadConfigFromPayload(config: ChartConfig, payload: unknown, key:
 
 export {
   ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
   ChartStyle,
+  ChartTooltip,
+  ChartTooltipContent,
 }

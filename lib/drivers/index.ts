@@ -28,6 +28,11 @@ export type {
   NezhaAPIMonitor,
   NezhaAPISafe,
   NezhaAPIStatus,
+  ServiceCycleTransfer,
+  ServiceMonitor,
+  ServiceMonitorDailyPoint,
+  ServiceMonitorStatus,
+  ServiceStats,
   ServerApi,
   ServerMonitorChart,
 } from "./types"

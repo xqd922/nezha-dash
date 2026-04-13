@@ -8,6 +8,7 @@ import type {
   IDataSourceDriver,
   NezhaAPI,
   NezhaAPIMonitor,
+  ServiceStats,
   ServerApi,
 } from "../types"
 import { DriverConfigError, DriverOperationError } from "../types"
@@ -27,6 +28,11 @@ export abstract class BaseDriver implements IDataSourceDriver {
   async initialize(config: DriverConfig): Promise<void> {
     if (!config.baseUrl) {
       throw new DriverConfigError(this.name, "baseUrl is required")
+    }
+
+    config.baseUrl = config.baseUrl.trim().replace(/^['"]|['"]$/g, "")
+    if (config.auth) {
+      config.auth = config.auth.trim().replace(/^['"]|['"]$/g, "")
     }
 
     // Normalize base URL (remove trailing slash)
@@ -87,6 +93,25 @@ export abstract class BaseDriver implements IDataSourceDriver {
    * Template method for driver-specific IP information fetching
    */
   protected abstract onGetServerIP(serverId: number): Promise<string>
+
+  /**
+   * Get service stats for drivers that expose service monitor or monthly transfer data
+   */
+  async getServiceStats(): Promise<ServiceStats | null> {
+    if (!this.capabilities.supportsServiceStats) {
+      console.warn(`Driver ${this.name} does not support service stats`)
+      return null
+    }
+
+    return this.onGetServiceStats()
+  }
+
+  /**
+   * Template method for driver-specific service stats fetching
+   */
+  protected async onGetServiceStats(): Promise<ServiceStats | null> {
+    return null
+  }
 
   /**
    * Health check for the driver

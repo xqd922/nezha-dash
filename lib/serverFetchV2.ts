@@ -5,7 +5,13 @@
 
 "use server"
 
-import type { DriverManager, NezhaAPI, NezhaAPIMonitor, ServerApi } from "./drivers"
+import type {
+  DriverManager,
+  NezhaAPI,
+  NezhaAPIMonitor,
+  ServiceStats,
+  ServerApi,
+} from "./drivers"
 import { initializeDriverManager } from "./drivers"
 
 // Singleton driver manager instance
@@ -96,6 +102,27 @@ export async function GetServerIP({ server_id }: { server_id: number }): Promise
     return await driver.getServerIP(server_id)
   } catch (error) {
     console.error("GetServerIP error:", error)
+    throw error
+  }
+}
+
+/**
+ * Get service monitor and monthly transfer stats
+ * Returns null if the current driver doesn't support this capability
+ */
+export async function GetServiceStats(): Promise<ServiceStats | null> {
+  try {
+    const driverManager = await getOrInitializeDriverManager()
+    const driver = driverManager.getCurrentDriver()
+
+    if (!driver.capabilities.supportsServiceStats) {
+      console.warn(`Current driver (${driver.name}) does not support service stats`)
+      return null
+    }
+
+    return await driver.getServiceStats()
+  } catch (error) {
+    console.error("GetServiceStats error:", error)
     throw error
   }
 }

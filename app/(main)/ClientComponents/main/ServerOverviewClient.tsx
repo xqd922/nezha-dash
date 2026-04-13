@@ -40,12 +40,14 @@ export default function ServerOverviewClient() {
             setFilter(false)
             setStatus("all")
           }}
-          className={cn("group cursor-pointer transition-all hover:border-blue-500")}
+          className={cn(
+            "group cursor-pointer transition-all hover:ring-blue-500 dark:hover:ring-blue-600",
+          )}
         >
           <CardContent className="flex h-full items-center px-6 py-3">
             <section className="flex flex-col gap-1">
               <p className="font-medium text-sm md:text-base">{t("p_816-881_Totalservers")}</p>
-              <div className="flex min-h-[28px] items-center gap-2">
+              <div className="flex min-h-7 items-center gap-2">
                 <span className="relative flex h-2 w-2">
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-500" />
                 </span>
@@ -68,16 +70,16 @@ export default function ServerOverviewClient() {
             setStatus("online")
           }}
           className={cn(
-            "cursor-pointer ring-1 ring-transparent transition-all hover:ring-green-500",
+            "cursor-pointer ring-1 transition-all hover:ring-green-500 dark:hover:ring-green-600",
             {
-              "border-transparent ring-2 ring-green-500": status === "online",
+              "border-transparent ring-2 ring-green-500 dark:ring-green-600": status === "online",
             },
           )}
         >
           <CardContent className="flex h-full items-center px-6 py-3">
             <section className="flex flex-col gap-1">
               <p className="font-medium text-sm md:text-base">{t("p_1610-1676_Onlineservers")}</p>
-              <div className="flex min-h-[28px] items-center gap-2">
+              <div className="flex min-h-7 items-center gap-2">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
@@ -101,16 +103,16 @@ export default function ServerOverviewClient() {
             setStatus("offline")
           }}
           className={cn(
-            "cursor-pointer ring-1 ring-transparent transition-all hover:ring-red-500",
+            "cursor-pointer ring-1 transition-all hover:ring-red-500 dark:hover:ring-red-600",
             {
-              "border-transparent ring-2 ring-red-500": status === "offline",
+              "border-transparent ring-2 ring-red-500 dark:ring-red-600": status === "offline",
             },
           )}
         >
           <CardContent className="flex h-full items-center px-6 py-3">
             <section className="flex flex-col gap-1">
               <p className="font-medium text-sm md:text-base">{t("p_2532-2599_Offlineservers")}</p>
-              <div className="flex min-h-[28px] items-center gap-2">
+              <div className="flex min-h-7 items-center gap-2">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
@@ -134,9 +136,9 @@ export default function ServerOverviewClient() {
             setFilter(true)
           }}
           className={cn(
-            "group cursor-pointer ring-1 ring-transparent transition-all hover:ring-purple-500",
+            "group cursor-pointer ring-1 hover:ring-purple-500 dark:hover:ring-purple-600",
             {
-              "border-transparent ring-2 ring-purple-500": filter === true,
+              "border-transparent ring-2 ring-purple-500 dark:ring-purple-600": filter === true,
             },
           )}
         >

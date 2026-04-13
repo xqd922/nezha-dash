@@ -1,5 +1,6 @@
 import withPWAInit from "@ducanh2912/next-pwa"
 import withBundleAnalyzer from "@next/bundle-analyzer"
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare"
 import createNextIntlPlugin from "next-intl/plugin"
 
 const bundleAnalyzer = withBundleAnalyzer({
@@ -34,8 +35,7 @@ const nextConfig = {
     },
   },
 }
-export default bundleAnalyzer(withPWA(withNextIntl(nextConfig)))
-
-import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare"
 
 initOpenNextCloudflareForDev()
+
+export default bundleAnalyzer(withPWA(withNextIntl(nextConfig)))
