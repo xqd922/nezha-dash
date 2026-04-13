@@ -70,6 +70,7 @@ export class KomariDriver extends BaseDriver {
     return {
       id: id,
       name: komariServer.name,
+      public_note: komariServer.public_remark || "",
       tag: komariServer.group || "",
       last_active: timestamp,
       online_status: true,

@@ -46,6 +46,7 @@ export function formatNezhaInfo(serverInfo: NezhaAPISafe) {
     stg: toPercentage(serverInfo.status.DiskUsed, serverInfo.host.DiskTotal),
     net_out_transfer: serverInfo.status.NetOutTransfer || 0,
     net_in_transfer: serverInfo.status.NetInTransfer || 0,
+    public_note: handlePublicNote(serverInfo.id, serverInfo.public_note || ""),
     country_code: serverInfo.host.CountryCode,
     cpu_info: serverInfo.host.CPU || [],
     gpu_info: serverInfo.host.GPU || [],
@@ -73,7 +74,7 @@ export function getDaysBetweenDates(date1: string, date2: string): number {
   const secondDate = new Date(date2)
 
   // 计算两个日期之间的天数差异
-  return Math.round(Math.abs((firstDate.getTime() - secondDate.getTime()) / oneDay))
+  return Math.round((firstDate.getTime() - secondDate.getTime()) / oneDay)
 }
 
 export const fetcher = (url: string) =>
@@ -147,6 +148,190 @@ export function formatTime12(timestamp: number): string {
   const ampm = hours >= 12 ? "PM" : "AM"
   const hours12 = hours % 12 || 12
   return `${hours12}:${minutes.toString().padStart(2, "0")} ${ampm}`
+}
+
+export interface BillingData {
+  startDate: string
+  endDate: string
+  autoRenewal: string
+  cycle: string
+  amount: string
+}
+
+export interface PlanData {
+  bandwidth: string
+  trafficVol: string
+  trafficType: string
+  IPv4: string
+  IPv6: string
+  networkRoute: string
+  extra: string
+}
+
+export interface PublicNoteData {
+  billingDataMod?: BillingData
+  planDataMod?: PlanData
+}
+
+export function parsePublicNote(publicNote: string): PublicNoteData | null {
+  try {
+    if (!publicNote) {
+      return null
+    }
+
+    const data = JSON.parse(publicNote)
+    if (!data.billingDataMod && !data.planDataMod) {
+      return null
+    }
+
+    const result: PublicNoteData = {}
+
+    if (data.billingDataMod) {
+      result.billingDataMod = {
+        startDate: data.billingDataMod.startDate || "",
+        endDate: data.billingDataMod.endDate || "",
+        autoRenewal: data.billingDataMod.autoRenewal || "",
+        cycle: data.billingDataMod.cycle || "",
+        amount: data.billingDataMod.amount || "",
+      }
+    }
+
+    if (data.planDataMod) {
+      result.planDataMod = {
+        bandwidth: data.planDataMod.bandwidth || "",
+        trafficVol: data.planDataMod.trafficVol || "",
+        trafficType: data.planDataMod.trafficType || "",
+        IPv4: data.planDataMod.IPv4 || "",
+        IPv6: data.planDataMod.IPv6 || "",
+        networkRoute: data.planDataMod.networkRoute || "",
+        extra: data.planDataMod.extra || "",
+      }
+    }
+
+    return result.billingDataMod || result.planDataMod ? result : null
+  } catch (error) {
+    console.error("Error parsing public note:", error)
+    return null
+  }
+}
+
+export function handlePublicNote(serverId: number, publicNote: string): string {
+  if (typeof window === "undefined") {
+    return publicNote || ""
+  }
+
+  const storageKey = `server_${serverId}_public_note`
+  const storedNote = sessionStorage.getItem(storageKey)
+
+  if (!publicNote && storedNote) {
+    return storedNote
+  }
+
+  if (publicNote) {
+    sessionStorage.setItem(storageKey, publicNote)
+    return publicNote
+  }
+
+  return ""
+}
+
+export function getNextCycleTime(startDate: number, months: number, specifiedDate: number): number {
+  if (!Number.isFinite(startDate) || months <= 0 || !Number.isFinite(specifiedDate)) {
+    throw new Error("Invalid billing cycle inputs")
+  }
+
+  const start = new Date(startDate)
+  const checkDate = new Date(specifiedDate)
+  if (Number.isNaN(start.getTime()) || Number.isNaN(checkDate.getTime())) {
+    throw new Error("Invalid billing cycle dates")
+  }
+
+  let nextDate = new Date(start)
+  while (nextDate.getTime() <= checkDate.getTime()) {
+    nextDate = new Date(nextDate)
+    nextDate.setMonth(nextDate.getMonth() + months)
+  }
+
+  return nextDate.getTime()
+}
+
+export function getDaysBetweenDatesWithAutoRenewal({
+  autoRenewal,
+  cycle,
+  startDate,
+  endDate,
+}: BillingData): {
+  days: number
+  cycleLabel: string
+  remainingPercentage: number
+} {
+  let months = 1
+  let cycleLabel = cycle
+
+  switch (cycle.toLowerCase()) {
+    case "月":
+    case "m":
+    case "mo":
+    case "month":
+    case "monthly":
+      cycleLabel = "月"
+      months = 1
+      break
+    case "年":
+    case "y":
+    case "yr":
+    case "year":
+    case "annual":
+      cycleLabel = "年"
+      months = 12
+      break
+    case "季":
+    case "q":
+    case "qr":
+    case "quarterly":
+      cycleLabel = "季"
+      months = 3
+      break
+    case "半年":
+    case "h":
+    case "half":
+    case "semi-annually":
+      cycleLabel = "半年"
+      months = 6
+      break
+    default:
+      break
+  }
+
+  const nowTime = Date.now()
+  const endTime = new Date(endDate).getTime()
+
+  if (autoRenewal !== "1") {
+    const totalDays = Math.max(1, getDaysBetweenDates(endDate, startDate))
+    const days = getDaysBetweenDates(endDate, new Date(nowTime).toISOString())
+    return {
+      days,
+      cycleLabel,
+      remainingPercentage: Math.min(1, days / totalDays),
+    }
+  }
+
+  if (nowTime < endTime) {
+    const days = getDaysBetweenDates(endDate, new Date(nowTime).toISOString())
+    return {
+      days,
+      cycleLabel,
+      remainingPercentage: Math.min(1, days / (30 * months)),
+    }
+  }
+
+  const nextTime = getNextCycleTime(endTime, months, nowTime)
+  const diff = getDaysBetweenDates(new Date(nextTime).toISOString(), new Date(nowTime).toISOString())
+  return {
+    days: diff,
+    cycleLabel,
+    remainingPercentage: Math.min(1, diff / (30 * months)),
+  }
 }
 
 // Emoji flag to country code mapping

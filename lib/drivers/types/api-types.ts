@@ -21,6 +21,7 @@ export type NezhaAPISafe = Omit<NezhaAPI, "ipv4" | "ipv6" | "valid_ip">
 export interface NezhaAPI {
   id: number
   name: string
+  public_note?: string
   tag: string
   last_active: number
   online_status: boolean

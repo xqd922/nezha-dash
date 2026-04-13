@@ -1,5 +1,7 @@
 import Link from "next/link"
 import { useTranslations } from "next-intl"
+import BillingInfo from "@/components/BillingInfo"
+import PlanInfo from "@/components/PlanInfo"
 import ServerFlag from "@/components/ServerFlag"
 import ServerUsageBar from "@/components/ServerUsageBar"
 import { Badge } from "@/components/ui/badge"
@@ -7,16 +9,17 @@ import { Card } from "@/components/ui/card"
 import type { NezhaAPISafe } from "@/lib/drivers/types"
 import getEnv from "@/lib/env-entry"
 import { GetFontLogoClass, GetOsName, MageMicrosoftWindows } from "@/lib/logo-class"
-import { cn, formatBytes, formatNezhaInfo } from "@/lib/utils"
+import { cn, formatBytes, formatNezhaInfo, parsePublicNote } from "@/lib/utils"
 
 export default function ServerCard({ serverInfo }: { serverInfo: NezhaAPISafe }) {
   const t = useTranslations("ServerCard")
-  const { id, name, country_code, online, cpu, up, down, mem, stg, host } =
+  const { id, name, country_code, online, cpu, up, down, mem, stg, host, public_note } =
     formatNezhaInfo(serverInfo)
 
   const showFlag = getEnv("NEXT_PUBLIC_ShowFlag") === "true"
   const showNetTransfer = getEnv("NEXT_PUBLIC_ShowNetTransfer") === "true"
   const fixedTopServerName = getEnv("NEXT_PUBLIC_FixedTopServerName") === "true"
+  const parsedData = parsePublicNote(public_note)
 
   const saveSession = () => {
     sessionStorage.setItem("fromMainPage", "true")
@@ -48,7 +51,7 @@ export default function ServerCard({ serverInfo }: { serverInfo: NezhaAPISafe })
           >
             {showFlag ? <ServerFlag country_code={country_code} /> : null}
           </div>
-          <div className="relative">
+          <div className="relative flex flex-col">
             <p
               className={cn(
                 "break-normal font-bold tracking-tight",
@@ -57,8 +60,22 @@ export default function ServerCard({ serverInfo }: { serverInfo: NezhaAPISafe })
             >
               {name}
             </p>
+            <div
+              className={cn("hidden lg:block", {
+                "lg:hidden": fixedTopServerName,
+              })}
+            >
+              {parsedData?.billingDataMod && <BillingInfo parsedData={parsedData} />}
+            </div>
           </div>
         </section>
+        <div
+          className={cn("flex items-center gap-2 -mt-2 lg:hidden", {
+            "lg:flex": fixedTopServerName,
+          })}
+        >
+          {parsedData?.billingDataMod && <BillingInfo parsedData={parsedData} />}
+        </div>
         <div className="flex flex-col gap-2">
           <section
             className={cn("grid grid-cols-5 items-center gap-3", {
@@ -126,6 +143,7 @@ export default function ServerCard({ serverInfo }: { serverInfo: NezhaAPISafe })
               </Badge>
             </section>
           )}
+          {parsedData?.planDataMod && <PlanInfo parsedData={parsedData} />}
         </div>
       </Card>
     </Link>
@@ -156,7 +174,7 @@ export default function ServerCard({ serverInfo }: { serverInfo: NezhaAPISafe })
           >
             {showFlag ? <ServerFlag country_code={country_code} /> : null}
           </div>
-          <div className="relative">
+          <div className="relative flex flex-col">
             <p
               className={cn(
                 "break-normal font-bold tracking-tight",
@@ -165,8 +183,23 @@ export default function ServerCard({ serverInfo }: { serverInfo: NezhaAPISafe })
             >
               {name}
             </p>
+            <div
+              className={cn("hidden lg:block", {
+                "lg:hidden": fixedTopServerName,
+              })}
+            >
+              {parsedData?.billingDataMod && <BillingInfo parsedData={parsedData} />}
+            </div>
           </div>
         </section>
+        <div
+          className={cn("flex items-center gap-2 lg:hidden", {
+            "lg:flex": fixedTopServerName,
+          })}
+        >
+          {parsedData?.billingDataMod && <BillingInfo parsedData={parsedData} />}
+        </div>
+        {parsedData?.planDataMod && <PlanInfo parsedData={parsedData} />}
       </Card>
     </Link>
   )

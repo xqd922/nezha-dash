@@ -1,21 +1,24 @@
 import Link from "next/link"
 import { useTranslations } from "next-intl"
+import BillingInfo from "@/components/BillingInfo"
+import PlanInfo from "@/components/PlanInfo"
 import ServerFlag from "@/components/ServerFlag"
 import ServerUsageBar from "@/components/ServerUsageBar"
 import { Card } from "@/components/ui/card"
 import type { NezhaAPISafe } from "@/lib/drivers/types"
 import getEnv from "@/lib/env-entry"
 import { GetFontLogoClass, GetOsName, MageMicrosoftWindows } from "@/lib/logo-class"
-import { cn, formatBytes, formatNezhaInfo } from "@/lib/utils"
+import { cn, formatBytes, formatNezhaInfo, parsePublicNote } from "@/lib/utils"
 
 import { Separator } from "./ui/separator"
 
 export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPISafe }) {
   const t = useTranslations("ServerCard")
-  const { id, name, country_code, online, cpu, up, down, mem, stg, host } =
+  const { id, name, country_code, online, cpu, up, down, mem, stg, host, public_note } =
     formatNezhaInfo(serverInfo)
 
   const showFlag = getEnv("NEXT_PUBLIC_ShowFlag") === "true"
+  const parsedData = parsePublicNote(public_note)
 
   const saveSession = () => {
     sessionStorage.setItem("fromMainPage", "true")
@@ -41,7 +44,7 @@ export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPIS
           >
             {showFlag ? <ServerFlag country_code={country_code} /> : null}
           </div>
-          <div className="relative w-28">
+          <div className="relative flex w-28 flex-col">
             <p
               className={cn(
                 "break-normal font-bold tracking-tight",
@@ -50,6 +53,7 @@ export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPIS
             >
               {name}
             </p>
+            {parsedData?.billingDataMod && <BillingInfo parsedData={parsedData} />}
           </div>
         </section>
         <Separator orientation="vertical" className="mx-0 ml-2 h-8" />
@@ -117,6 +121,7 @@ export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPIS
             </div>
           </section>
         </div>
+        {parsedData?.planDataMod && <PlanInfo parsedData={parsedData} />}
       </Card>
     </Link>
   ) : (
@@ -139,7 +144,7 @@ export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPIS
           >
             {showFlag ? <ServerFlag country_code={country_code} /> : null}
           </div>
-          <div className="relative w-28">
+          <div className="relative flex w-28 flex-col">
             <p
               className={cn(
                 "break-normal font-bold tracking-tight",
@@ -148,8 +153,10 @@ export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPIS
             >
               {name}
             </p>
+            {parsedData?.billingDataMod && <BillingInfo parsedData={parsedData} />}
           </div>
         </section>
+        {parsedData?.planDataMod && <PlanInfo parsedData={parsedData} />}
       </Card>
     </Link>
   )
