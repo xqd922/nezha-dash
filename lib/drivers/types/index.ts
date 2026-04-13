@@ -17,6 +17,11 @@ import type {
   NezhaAPIMonitor as _NezhaAPIMonitor,
   NezhaAPISafe as _NezhaAPISafe,
   NezhaAPIStatus as _NezhaAPIStatus,
+  ServiceCycleTransfer as _ServiceCycleTransfer,
+  ServiceMonitor as _ServiceMonitor,
+  ServiceMonitorDailyPoint as _ServiceMonitorDailyPoint,
+  ServiceMonitorStatus as _ServiceMonitorStatus,
+  ServiceStats as _ServiceStats,
   ServerApi as _ServerApi,
   ServerMonitorChart as _ServerMonitorChart,
 } from "./api-types"
@@ -28,6 +33,11 @@ export type NezhaAPISafe = _NezhaAPISafe
 export type NezhaAPIHost = _NezhaAPIHost
 export type NezhaAPIStatus = _NezhaAPIStatus
 export type NezhaAPIMonitor = _NezhaAPIMonitor
+export type ServiceMonitorStatus = _ServiceMonitorStatus
+export type ServiceMonitorDailyPoint = _ServiceMonitorDailyPoint
+export type ServiceMonitor = _ServiceMonitor
+export type ServiceCycleTransfer = _ServiceCycleTransfer
+export type ServiceStats = _ServiceStats
 export type ServerMonitorChart = _ServerMonitorChart
 export type KomariAPIResponse = _KomariAPIResponse
 export type KomariServer = _KomariServer
@@ -58,6 +68,7 @@ export interface DriverCapabilities {
   supportsHistoricalData: boolean
   supportsIpInfo: boolean
   supportsPacketLoss: boolean
+  supportsServiceStats: boolean
   supportsAlerts: boolean
 }
 
@@ -99,6 +110,11 @@ export interface IDataSourceDriver {
    * Get server IP information (if supported)
    */
   getServerIP(serverId: number): Promise<string>
+
+  /**
+   * Get service monitor and cycle transfer stats (if supported)
+   */
+  getServiceStats(): Promise<ServiceStats | null>
 
   /**
    * Health check for the driver

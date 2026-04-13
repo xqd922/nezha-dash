@@ -38,6 +38,7 @@ export class MyNodeQueryDriver extends BaseDriver {
       supportsHistoricalData: false,
       supportsIpInfo: true,
       supportsPacketLoss: false,
+      supportsServiceStats: false,
       supportsAlerts: false,
     })
   }

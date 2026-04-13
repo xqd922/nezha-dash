@@ -85,6 +85,46 @@ export interface NezhaAPIMonitor {
   packet_loss?: number[]
 }
 
+export type ServiceMonitorStatus = "good" | "warning" | "danger" | "nodata"
+
+export interface ServiceMonitorDailyPoint {
+  label: string
+  availability: number
+  delay: number
+  status: ServiceMonitorStatus
+}
+
+export interface ServiceMonitor {
+  type: number
+  typeLabel: string
+  name: string
+  currentAvailability: number
+  availability: number
+  averageDelay: number
+  status: ServiceMonitorStatus
+  daily: ServiceMonitorDailyPoint[]
+}
+
+export interface ServiceCycleTransfer {
+  id: number
+  rule: string
+  serverName: string
+  from: string
+  to: string
+  max: string
+  min: string
+  nextCheck: string
+  currentUsage: string
+  transferLeft: string
+  transferLeftPercent: number
+}
+
+export interface ServiceStats {
+  fetchedAt: number
+  monitors: ServiceMonitor[]
+  cycleTransfers: ServiceCycleTransfer[]
+}
+
 // Komari API types
 export interface KomariAPIResponse {
   status: string

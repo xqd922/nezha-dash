@@ -1,6 +1,6 @@
 "use client"
 
-import { MapIcon, ViewColumnsIcon } from "@heroicons/react/20/solid"
+import { ChartBarSquareIcon, MapIcon, ViewColumnsIcon } from "@heroicons/react/20/solid"
 import dynamic from "next/dynamic"
 import { useTranslations } from "next-intl"
 import { type RefObject, useEffect, useRef, useState } from "react"
@@ -20,6 +20,9 @@ import { cn } from "@/lib/utils"
 const ServerGlobal = dynamic(() => import("./Global"), {
   ssr: false,
   loading: () => <GlobalLoading />,
+})
+const ServiceStatsSection = dynamic(() => import("./ServiceStatsSection"), {
+  ssr: false,
 })
 
 type ServerItem = ServerApi["result"][number]
@@ -97,7 +100,7 @@ const ServerList = ({
     return (
       <section
         ref={containerRef}
-        className="scrollbar-hidden flex flex-col gap-2 overflow-x-scroll p-px"
+        className="scrollbar-hidden mt-6 flex flex-col gap-2 overflow-x-scroll p-px"
       >
         {servers.map((serverInfo) => (
           <ServerCardInline key={serverInfo.id} serverInfo={serverInfo} />
@@ -107,7 +110,7 @@ const ServerList = ({
   }
 
   return (
-    <section ref={containerRef} className="grid grid-cols-1 gap-2 md:grid-cols-2">
+    <section ref={containerRef} className="mt-6 grid grid-cols-1 gap-2 md:grid-cols-2">
       {servers.map((serverInfo) => (
         <ServerCard key={serverInfo.id} serverInfo={serverInfo} />
       ))}
@@ -124,6 +127,7 @@ export default function ServerListClient() {
 
   const [tag, setTag] = useState<string>(defaultTag)
   const [showMap, setShowMap] = useState<boolean>(false)
+  const [showServices, setShowServices] = useState<string>("0")
   const [inline, setInline] = useState<string>("0")
 
   useEffect(() => {
@@ -135,6 +139,11 @@ export default function ServerListClient() {
     const showMapState = localStorage.getItem("showMap")
     if (showMapState !== null) {
       setShowMap(showMapState === "true")
+    }
+
+    const showServicesState = localStorage.getItem("showServices")
+    if (showServicesState !== null) {
+      setShowServices(showServicesState)
     }
 
     const savedTag = sessionStorage.getItem("selectedTag") || defaultTag
@@ -188,7 +197,7 @@ export default function ServerListClient() {
 
   return (
     <>
-      <section className="flex w-full items-center gap-2 overflow-hidden">
+      <section className="mt-6 flex w-full items-center gap-2 overflow-hidden">
         <button
           type="button"
           onClick={() => {
@@ -205,6 +214,23 @@ export default function ServerListClient() {
           )}
         >
           <MapIcon className="size-[13px]" />
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            const newShowServices = showServices === "0" ? "1" : "0"
+            setShowServices(newShowServices)
+            localStorage.setItem("showServices", newShowServices)
+          }}
+          className={cn(
+            "inset-shadow-2xs inset-shadow-white/20 flex cursor-pointer flex-col items-center gap-0 rounded-[50px] bg-blue-100 p-2.5 text-blue-600 transition-all dark:bg-blue-900 dark:text-blue-100",
+            {
+              "inset-shadow-black/20 bg-blue-600 text-white dark:bg-blue-100 dark:text-blue-600":
+                showServices === "1",
+            },
+          )}
+        >
+          <ChartBarSquareIcon className="size-[13px]" />
         </button>
         <button
           type="button"
@@ -233,6 +259,7 @@ export default function ServerListClient() {
         )}
       </section>
       {showMap && <ServerGlobal />}
+      {showServices === "1" && <ServiceStatsSection />}
       <ServerList servers={filteredServers} inline={inline} containerRef={containerRef} />
     </>
   )

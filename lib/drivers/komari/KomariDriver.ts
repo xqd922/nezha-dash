@@ -27,6 +27,7 @@ export class KomariDriver extends BaseDriver {
       supportsHistoricalData: false,
       supportsIpInfo: false,
       supportsPacketLoss: false,
+      supportsServiceStats: false,
       supportsAlerts: false,
     })
   }
