@@ -10,15 +10,13 @@ export default function RemainPercentBar({
   value: number
   className?: string
 }) {
-  const clampedValue = Math.max(0, Math.min(100, value))
-
   return (
     <Progress
-      value={clampedValue}
-      className={cn("h-1 w-[92px] max-w-full rounded-sm", className)}
-      indicatorClassName={
-        clampedValue < 30 ? "bg-red-500" : clampedValue < 70 ? "bg-orange-400" : "bg-green-500"
-      }
+      aria-label={"Server Usage Bar"}
+      aria-labelledby={"Server Usage Bar"}
+      value={value}
+      className={cn("h-[3px] w-[70px] rounded-sm", className)}
+      indicatorClassName={value < 30 ? "bg-red-500" : value < 70 ? "bg-orange-400" : "bg-green-500"}
     />
   )
 }

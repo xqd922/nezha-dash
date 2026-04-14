@@ -29,7 +29,7 @@ export default function ServerCard({ serverInfo }: { serverInfo: NezhaAPISafe })
     <Link onClick={saveSession} href={`/server/${id}`} prefetch={true}>
       <Card
         className={cn(
-          "flex cursor-pointer flex-col items-center justify-start gap-3 p-3 transition-all hover:shadow-sm hover:ring-stone-300 md:px-5 dark:hover:ring-stone-700",
+          "flex cursor-pointer flex-col items-center justify-start gap-3 p-3 transition-colors hover:bg-accent/50 md:px-5",
           {
             "flex-col": fixedTopServerName,
             "lg:flex-row": !fixedTopServerName,
@@ -114,17 +114,17 @@ export default function ServerCard({ serverInfo }: { serverInfo: NezhaAPISafe })
               <div className="flex items-center font-semibold text-xs">{stg.toFixed(2)}%</div>
               <ServerUsageBar value={stg} />
             </div>
-            <div className={"flex w-[4.5rem] flex-col"}>
-              <p className="text-[11px] text-muted-foreground">{t("Upload")}</p>
-              <div className="flex items-center font-semibold text-[11px]">{formatSpeed(up)}</div>
+            <div className={"flex w-14 flex-col"}>
+              <p className="text-muted-foreground text-xs">{t("Upload")}</p>
+              <div className="flex items-center font-semibold text-xs">{formatSpeed(up)}</div>
             </div>
-            <div className={"flex w-[4.5rem] flex-col"}>
-              <p className="text-[11px] text-muted-foreground">{t("Download")}</p>
-              <div className="flex items-center font-semibold text-[11px]">{formatSpeed(down)}</div>
+            <div className={"flex w-14 flex-col"}>
+              <p className="text-muted-foreground text-xs">{t("Download")}</p>
+              <div className="flex items-center font-semibold text-xs">{formatSpeed(down)}</div>
             </div>
           </section>
           {showNetTransfer && (
-            <section className={"flex items-center justify-between gap-1"}>
+            <section className={"flex w-full items-center justify-between gap-1"}>
               <Badge
                 variant="secondary"
                 className="flex-1 items-center justify-center text-nowrap rounded-[8px] border-muted-50 text-[11px] shadow-md shadow-neutral-200/30 dark:shadow-none"
@@ -147,7 +147,7 @@ export default function ServerCard({ serverInfo }: { serverInfo: NezhaAPISafe })
     <Link onClick={saveSession} href={`/server/${id}`} prefetch={true}>
       <Card
         className={cn(
-          "flex cursor-pointer flex-col items-center justify-start gap-3 p-3 transition-all hover:shadow-sm hover:ring-stone-300 md:px-5 dark:hover:ring-stone-700",
+          "flex cursor-pointer flex-col items-center justify-start gap-3 p-3 transition-colors hover:bg-accent/50 sm:gap-0 md:px-5",
           showNetTransfer ? "min-h-[123px] lg:min-h-[91px]" : "min-h-[93px] lg:min-h-[61px]",
           {
             "flex-col": fixedTopServerName,
@@ -173,7 +173,7 @@ export default function ServerCard({ serverInfo }: { serverInfo: NezhaAPISafe })
           <div className="relative flex flex-col">
             <p
               className={cn(
-                "break-normal font-bold tracking-tight",
+                "max-w-[108px] break-normal font-bold tracking-tight",
                 showFlag ? "text-xs" : "text-sm",
               )}
             >

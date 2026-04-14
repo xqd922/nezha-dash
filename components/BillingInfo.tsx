@@ -30,7 +30,7 @@ export default function BillingInfo({ parsedData }: { parsedData: PublicNoteData
       } catch (error) {
         console.error(error)
         return (
-          <div className={cn("text-[11px] text-muted-foreground text-red-600 leading-tight")}>
+          <div className={cn("text-[10px] text-muted-foreground text-red-600")}>
             {t("remaining")}: {t("error")}
           </div>
         )
@@ -38,22 +38,22 @@ export default function BillingInfo({ parsedData }: { parsedData: PublicNoteData
     }
   }
 
-  const amount = parsedData.billingDataMod.amount
-
   return daysLeftObject.days >= 0 ? (
     <>
-      {amount && amount !== "0" && amount !== "-1" ? (
-        <p className="text-[11px] text-muted-foreground leading-tight">
-          {t("price")}: {amount}/{parsedData.billingDataMod.cycle}
+      {parsedData.billingDataMod.amount &&
+      parsedData.billingDataMod.amount !== "0" &&
+      parsedData.billingDataMod.amount !== "-1" ? (
+        <p className={cn("text-[10px] text-muted-foreground")}>
+          {t("price")}: {parsedData.billingDataMod.amount}/{parsedData.billingDataMod.cycle}
         </p>
-      ) : amount === "0" ? (
-        <p className="text-[11px] text-green-600 leading-tight">{t("free")}</p>
-      ) : amount === "-1" ? (
-        <p className="text-[11px] text-pink-600 leading-tight">{t("usage-based")}</p>
+      ) : parsedData.billingDataMod.amount === "0" ? (
+        <p className={cn("text-[10px] text-green-600")}>{t("free")}</p>
+      ) : parsedData.billingDataMod.amount === "-1" ? (
+        <p className={cn("text-[10px] text-pink-600")}>{t("usage-based")}</p>
       ) : null}
 
       {hasBillingDates && (
-        <div className="text-[11px] text-muted-foreground leading-tight">
+        <div className={cn("text-[10px] text-muted-foreground")}>
           {t("remaining")}:{" "}
           {isNeverExpire ? t("indefinite") : `${daysLeftObject.days} ${t("days")}`}
         </div>
@@ -65,17 +65,19 @@ export default function BillingInfo({ parsedData }: { parsedData: PublicNoteData
     </>
   ) : (
     <>
-      {amount && amount !== "0" && amount !== "-1" ? (
-        <p className="text-[11px] text-muted-foreground leading-tight">
-          {t("price")}: {amount}/{parsedData.billingDataMod.cycle}
+      {parsedData.billingDataMod.amount &&
+      parsedData.billingDataMod.amount !== "0" &&
+      parsedData.billingDataMod.amount !== "-1" ? (
+        <p className={cn("text-[10px] text-muted-foreground")}>
+          {t("price")}: {parsedData.billingDataMod.amount}/{parsedData.billingDataMod.cycle}
         </p>
-      ) : amount === "0" ? (
-        <p className="text-[11px] text-green-600 leading-tight">{t("free")}</p>
-      ) : amount === "-1" ? (
-        <p className="text-[11px] text-pink-600 leading-tight">{t("usage-based")}</p>
+      ) : parsedData.billingDataMod.amount === "0" ? (
+        <p className={cn("text-[10px] text-green-600")}>{t("free")}</p>
+      ) : parsedData.billingDataMod.amount === "-1" ? (
+        <p className={cn("text-[10px] text-pink-600")}>{t("usage-based")}</p>
       ) : null}
 
-      <p className={cn("text-[11px] text-muted-foreground text-red-600 leading-tight")}>
+      <p className={cn("text-[10px] text-muted-foreground text-red-600")}>
         {t("expired")}: {daysLeftObject.days * -1} {t("days")}
       </p>
     </>

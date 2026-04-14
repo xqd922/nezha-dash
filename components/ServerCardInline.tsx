@@ -26,109 +26,113 @@ export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPIS
 
   return online ? (
     <Link onClick={saveSession} href={`/server/${id}`} prefetch={true}>
-      <Card
-        className={cn(
-          "flex w-full min-w-[900px] cursor-pointer items-center justify-start gap-3 p-3 transition-all hover:shadow-sm hover:ring-stone-300 md:px-5 lg:flex-row dark:hover:ring-stone-700",
-        )}
-      >
-        <section
-          className={cn("grid items-center gap-2 lg:w-36")}
-          style={{ gridTemplateColumns: "auto auto 1fr" }}
+      <section>
+        <Card
+          className={cn(
+            "flex w-full min-w-[900px] cursor-pointer items-center justify-start gap-3 p-3 transition-colors hover:bg-accent/50 md:px-5 lg:flex-row",
+          )}
         >
-          <span className="h-2 w-2 shrink-0 self-center rounded-full bg-green-500" />
-          <div
-            className={cn(
-              "flex items-center justify-center",
-              showFlag ? "min-w-[17px]" : "min-w-0",
-            )}
+          <section
+            className={cn("grid items-center gap-2 lg:w-36")}
+            style={{ gridTemplateColumns: "auto auto 1fr" }}
           >
-            {showFlag ? <ServerFlag country_code={country_code} /> : null}
-          </div>
-          <div className="relative flex w-32 flex-col">
-            <p
+            <span className="h-2 w-2 shrink-0 self-center rounded-full bg-green-500" />
+            <div
               className={cn(
-                "break-normal font-bold tracking-tight",
-                showFlag ? "text-xs" : "text-sm",
+                "flex items-center justify-center",
+                showFlag ? "min-w-[17px]" : "min-w-0",
               )}
             >
-              {name}
-            </p>
-            {parsedData?.billingDataMod && <BillingInfo parsedData={parsedData} />}
-          </div>
-        </section>
-        <Separator orientation="vertical" className="mx-0 ml-2 h-8" />
-        <div className="flex flex-col gap-1">
-          <section className={cn("grid flex-1 grid-cols-9 items-center gap-3")}>
-            <div className={"flex flex-row items-center gap-2 whitespace-nowrap"}>
-              <div className="font-semibold text-xs">
-                {host.Platform.includes("Windows") ? (
-                  <MageMicrosoftWindows className="size-2.5" />
-                ) : (
-                  <p className={`fl-${GetFontLogoClass(host.Platform)}`} />
+              {showFlag ? <ServerFlag country_code={country_code} /> : null}
+            </div>
+            <div className="relative flex w-28 flex-col">
+              <p
+                className={cn(
+                  "break-normal font-bold tracking-tight",
+                  showFlag ? "text-xs" : "text-sm",
                 )}
-              </div>
-              <div className={"flex w-14 flex-col"}>
-                <p className="text-muted-foreground text-xs">{t("System")}</p>
-                <div className="flex items-center font-semibold text-[10.5px]">
-                  {host.Platform.includes("Windows") ? "Windows" : GetOsName(host.Platform)}
-                </div>
-              </div>
-            </div>
-            <div className={"flex w-20 flex-col"}>
-              <p className="text-muted-foreground text-xs">{t("Uptime")}</p>
-              <div className="flex items-center font-semibold text-xs">
-                {(serverInfo?.status.Uptime / 86400).toFixed(0)} {"Days"}
-              </div>
-            </div>
-            <div className={"flex w-14 flex-col"}>
-              <p className="text-muted-foreground text-xs">{t("CPU")}</p>
-              <div className="flex items-center font-semibold text-xs">{cpu.toFixed(2)}%</div>
-              <ServerUsageBar value={cpu} />
-            </div>
-            <div className={"flex w-14 flex-col"}>
-              <p className="text-muted-foreground text-xs">{t("Mem")}</p>
-              <div className="flex items-center font-semibold text-xs">{mem.toFixed(2)}%</div>
-              <ServerUsageBar value={mem} />
-            </div>
-            <div className={"flex w-14 flex-col"}>
-              <p className="text-muted-foreground text-xs">{t("STG")}</p>
-              <div className="flex items-center font-semibold text-xs">{stg.toFixed(2)}%</div>
-              <ServerUsageBar value={stg} />
-            </div>
-            <div className={"flex w-20 flex-col"}>
-              <p className="text-[11px] text-muted-foreground">{t("Upload")}</p>
-              <div className="flex items-center font-semibold text-[11px]">{formatSpeed(up)}</div>
-            </div>
-            <div className={"flex w-20 flex-col"}>
-              <p className="text-[11px] text-muted-foreground">{t("Download")}</p>
-              <div className="flex items-center font-semibold text-[11px]">{formatSpeed(down)}</div>
-            </div>
-            <div className={"flex w-24 flex-col"}>
-              <p className="text-[11px] text-muted-foreground">{t("TotalUpload")}</p>
-              <div className="flex items-center font-semibold text-[11px]">
-                {formatBytes(serverInfo.status.NetOutTransfer)}
-              </div>
-            </div>
-            <div className={"flex w-24 flex-col"}>
-              <p className="text-[11px] text-muted-foreground">{t("TotalDownload")}</p>
-              <div className="flex items-center font-semibold text-[11px]">
-                {formatBytes(serverInfo.status.NetInTransfer)}
-              </div>
+              >
+                {name}
+              </p>
+              {parsedData?.billingDataMod && <BillingInfo parsedData={parsedData} />}
             </div>
           </section>
-          {parsedData?.planDataMod && <PlanInfo parsedData={parsedData} />}
-        </div>
-      </Card>
+          <Separator orientation="vertical" className="mx-0 ml-2 h-8" />
+          <div className="flex flex-col gap-1">
+            <section className={cn("grid flex-1 grid-cols-9 items-center gap-3")}>
+              <div className={"flex flex-row items-center gap-2 whitespace-nowrap"}>
+                <div className="font-semibold text-xs">
+                  {host.Platform.includes("Windows") ? (
+                    <MageMicrosoftWindows className="size-[10px]" />
+                  ) : (
+                    <p className={`fl-${GetFontLogoClass(host.Platform)}`} />
+                  )}
+                </div>
+                <div className={"flex w-14 flex-col"}>
+                  <p className="text-muted-foreground text-xs">{t("System")}</p>
+                  <div className="flex items-center font-semibold text-[10.5px]">
+                    {host.Platform.includes("Windows") ? "Windows" : GetOsName(host.Platform)}
+                  </div>
+                </div>
+              </div>
+              <div className={"flex w-20 flex-col"}>
+                <p className="text-muted-foreground text-xs">{t("Uptime")}</p>
+                <div className="flex items-center font-semibold text-xs">
+                  {serverInfo.status.Uptime / 86400 >= 1
+                    ? `${(serverInfo.status.Uptime / 86400).toFixed(0)} ${t("Days")}`
+                    : `${(serverInfo.status.Uptime / 3600).toFixed(0)} ${t("Hours")}`}
+                </div>
+              </div>
+              <div className={"flex w-14 flex-col"}>
+                <p className="text-muted-foreground text-xs">{t("CPU")}</p>
+                <div className="flex items-center font-semibold text-xs">{cpu.toFixed(2)}%</div>
+                <ServerUsageBar value={cpu} />
+              </div>
+              <div className={"flex w-14 flex-col"}>
+                <p className="text-muted-foreground text-xs">{t("Mem")}</p>
+                <div className="flex items-center font-semibold text-xs">{mem.toFixed(2)}%</div>
+                <ServerUsageBar value={mem} />
+              </div>
+              <div className={"flex w-14 flex-col"}>
+                <p className="text-muted-foreground text-xs">{t("STG")}</p>
+                <div className="flex items-center font-semibold text-xs">{stg.toFixed(2)}%</div>
+                <ServerUsageBar value={stg} />
+              </div>
+              <div className={"flex w-16 flex-col"}>
+                <p className="text-muted-foreground text-xs">{t("Upload")}</p>
+                <div className="flex items-center font-semibold text-xs">{formatSpeed(up)}</div>
+              </div>
+              <div className={"flex w-16 flex-col"}>
+                <p className="text-muted-foreground text-xs">{t("Download")}</p>
+                <div className="flex items-center font-semibold text-xs">{formatSpeed(down)}</div>
+              </div>
+              <div className={"flex w-20 flex-col"}>
+                <p className="text-muted-foreground text-xs">{t("TotalUpload")}</p>
+                <div className="flex items-center font-semibold text-xs">
+                  {formatBytes(serverInfo.status.NetOutTransfer)}
+                </div>
+              </div>
+              <div className={"flex w-20 flex-col"}>
+                <p className="text-muted-foreground text-xs">{t("TotalDownload")}</p>
+                <div className="flex items-center font-semibold text-xs">
+                  {formatBytes(serverInfo.status.NetInTransfer)}
+                </div>
+              </div>
+            </section>
+            {parsedData?.planDataMod && <PlanInfo parsedData={parsedData} />}
+          </div>
+        </Card>
+      </section>
     </Link>
   ) : (
     <Link onClick={saveSession} href={`/server/${id}`} prefetch={true}>
       <Card
         className={cn(
-          "flex min-h-[61px] min-w-[900px] flex-row items-center justify-start gap-3 p-3 transition-all hover:shadow-sm hover:ring-stone-300 md:px-5 lg:flex-row dark:hover:ring-stone-700",
+          "flex min-h-[61px] min-w-[900px] cursor-pointer flex-row items-center justify-start p-3 transition-colors hover:bg-accent/50 md:px-5",
         )}
       >
         <section
-          className={cn("grid items-center gap-2 lg:w-40")}
+          className={cn("grid w-40 items-center gap-2")}
           style={{ gridTemplateColumns: "auto auto 1fr" }}
         >
           <span className="h-2 w-2 shrink-0 self-center rounded-full bg-red-500" />
@@ -140,10 +144,10 @@ export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPIS
           >
             {showFlag ? <ServerFlag country_code={country_code} /> : null}
           </div>
-          <div className="relative flex w-32 flex-col">
+          <div className="relative flex flex-col">
             <p
               className={cn(
-                "break-normal font-bold tracking-tight",
+                "w-28 break-normal font-bold tracking-tight",
                 showFlag ? "text-xs" : "text-sm",
               )}
             >
@@ -152,7 +156,7 @@ export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPIS
             {parsedData?.billingDataMod && <BillingInfo parsedData={parsedData} />}
           </div>
         </section>
-        <Separator orientation="vertical" className="mx-0 ml-2 h-8" />
+        <Separator orientation="vertical" className="mr-3 ml-3 h-8 lg:ml-1" />
         {parsedData?.planDataMod && <PlanInfo parsedData={parsedData} />}
       </Card>
     </Link>
