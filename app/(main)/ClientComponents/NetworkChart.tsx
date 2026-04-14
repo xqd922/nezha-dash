@@ -119,9 +119,13 @@ export const NetworkChart = React.memo(function NetworkChart({
   const defaultChart = "All";
   const packetLossLabel = t("packet_loss");
   const peakCutLabel = t("peak_cut");
+  const forcePeakCutEnabled =
+    getEnv("NEXT_PUBLIC_ForcePeakCutEnabled") === "true";
 
   const [activeChart, setActiveChart] = React.useState(defaultChart);
-  const [isPeakEnabled, setIsPeakEnabled] = React.useState(false);
+  const [isPeakEnabled, setIsPeakEnabled] = React.useState(
+    forcePeakCutEnabled,
+  );
 
   const handleButtonClick = useCallback(
     (chart: string) => {
