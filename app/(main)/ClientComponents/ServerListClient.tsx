@@ -36,6 +36,11 @@ export default function ServerListClient() {
     if (inlineState !== null) {
       setInline(inlineState);
     }
+
+    const showMapState = localStorage.getItem("showMap");
+    if (showMapState !== null) {
+      setShowMap(showMapState === "true");
+    }
   }, []);
 
   useEffect(() => {
@@ -135,27 +140,33 @@ export default function ServerListClient() {
     <>
       <section className="flex items-center gap-2 w-full overflow-hidden">
         <button
+          type="button"
           onClick={() => {
-            setShowMap(!showMap);
+            const newShowMap = !showMap;
+            setShowMap(newShowMap);
+            localStorage.setItem("showMap", String(newShowMap));
           }}
           className={cn(
-            "rounded-[50px] text-white cursor-pointer [text-shadow:_0_1px_0_rgb(0_0_0_/_20%)] bg-blue-600 p-[10px] transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]",
+            "inset-shadow-2xs inset-shadow-white/20 flex cursor-pointer flex-col items-center gap-0 rounded-[50px] bg-blue-100 p-2.5 text-blue-600 transition-all dark:bg-blue-900 dark:text-blue-100",
             {
-              "shadow-[inset_0_1px_0_rgba(0,0,0,0.2)] bg-blue-500": showMap,
+              "inset-shadow-black/20 bg-blue-600 text-white dark:bg-blue-100 dark:text-blue-600":
+                showMap,
             },
           )}
         >
           <MapIcon className="size-[13px]" />
         </button>
         <button
+          type="button"
           onClick={() => {
-            setInline(inline === "0" ? "1" : "0");
-            localStorage.setItem("inline", inline === "0" ? "1" : "0");
+            const newInline = inline === "0" ? "1" : "0";
+            setInline(newInline);
+            localStorage.setItem("inline", newInline);
           }}
           className={cn(
-            "rounded-[50px] text-white cursor-pointer [text-shadow:_0_1px_0_rgb(0_0_0_/_20%)] bg-blue-600  p-[10px] transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]  ",
+            "inset-shadow-2xs inset-shadow-white/20 flex cursor-pointer flex-col items-center gap-0 rounded-[50px] bg-blue-100 p-2.5 text-blue-600 transition-all dark:bg-blue-900 dark:text-blue-100",
             {
-              "shadow-[inset_0_1px_0_rgba(0,0,0,0.2)] bg-blue-500":
+              "inset-shadow-black/20 bg-blue-600 text-white dark:bg-blue-100 dark:text-blue-600":
                 inline === "1",
             },
           )}
