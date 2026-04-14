@@ -18,6 +18,7 @@ export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPIS
     formatNezhaInfo(serverInfo)
 
   const showFlag = getEnv("NEXT_PUBLIC_ShowFlag") === "true"
+  const showNetTransfer = getEnv("NEXT_PUBLIC_ShowNetTransfer") === "true"
   const parsedData = parsePublicNote(public_note)
 
   const saveSession = () => {
@@ -59,7 +60,12 @@ export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPIS
           </section>
           <Separator orientation="vertical" className="mx-0 ml-2 h-8" />
           <div className="flex flex-col gap-1">
-            <section className={cn("grid flex-1 grid-cols-9 items-center gap-3")}>
+            <section
+              className={cn("grid flex-1 items-center gap-3", {
+                "grid-cols-7": !showNetTransfer,
+                "grid-cols-9": showNetTransfer,
+              })}
+            >
               <div className={"flex flex-row items-center gap-2 whitespace-nowrap"}>
                 <div className="font-semibold text-xs">
                   {host.Platform.includes("Windows") ? (
@@ -106,18 +112,22 @@ export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPIS
                 <p className="text-muted-foreground text-xs">{t("Download")}</p>
                 <div className="flex items-center font-semibold text-xs">{formatSpeed(down)}</div>
               </div>
-              <div className={"flex w-20 flex-col"}>
-                <p className="text-muted-foreground text-xs">{t("TotalUpload")}</p>
-                <div className="flex items-center font-semibold text-xs">
-                  {formatBytes(serverInfo.status.NetOutTransfer)}
+              {showNetTransfer && (
+                <div className={"flex w-20 flex-col"}>
+                  <p className="text-muted-foreground text-xs">{t("TotalUpload")}</p>
+                  <div className="flex items-center font-semibold text-xs">
+                    {formatBytes(serverInfo.status.NetOutTransfer)}
+                  </div>
                 </div>
-              </div>
-              <div className={"flex w-20 flex-col"}>
-                <p className="text-muted-foreground text-xs">{t("TotalDownload")}</p>
-                <div className="flex items-center font-semibold text-xs">
-                  {formatBytes(serverInfo.status.NetInTransfer)}
+              )}
+              {showNetTransfer && (
+                <div className={"flex w-20 flex-col"}>
+                  <p className="text-muted-foreground text-xs">{t("TotalDownload")}</p>
+                  <div className="flex items-center font-semibold text-xs">
+                    {formatBytes(serverInfo.status.NetInTransfer)}
+                  </div>
                 </div>
-              </div>
+              )}
             </section>
             {parsedData?.planDataMod && <PlanInfo parsedData={parsedData} />}
           </div>
