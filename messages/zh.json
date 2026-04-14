@@ -53,10 +53,14 @@
   },
   "NetworkChartClient": {
     "avg_delay": "延迟",
+    "packet_loss": "丢包率",
     "chart_fetch_error_message": "获取网络数据失败，请检查是否开启服务端监控"
   },
   "NetworkChart": {
-    "ServerMonitorCount": "个监控服务"
+    "avg_delay": "延迟",
+    "packet_loss": "丢包率",
+    "ServerMonitorCount": "个监控服务",
+    "peak_cut": "削峰"
   },
   "ServerDetailClient": {
     "detail_fetch_error_message": "获取服务器详情失败,请检查您的环境变量并检查服务器控制台",

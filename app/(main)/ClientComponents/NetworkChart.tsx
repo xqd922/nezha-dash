@@ -47,7 +47,7 @@ export function NetworkChartClient({
   show: boolean;
 }) {
   const t = useTranslations("NetworkChartClient");
-  const packetLossLabel = "Packet Loss";
+  const packetLossLabel = t("packet_loss");
   const { data, error } = useSWR<NezhaAPIMonitor[]>(
     `/api/monitor?server_id=${server_id}`,
     nezhaFetcher,
@@ -117,8 +117,8 @@ export const NetworkChart = React.memo(function NetworkChart({
   const t = useTranslations("NetworkChart");
 
   const defaultChart = "All";
-  const packetLossLabel = "Packet Loss";
-  const peakCutLabel = "Peak Cut";
+  const packetLossLabel = t("packet_loss");
+  const peakCutLabel = t("peak_cut");
 
   const [activeChart, setActiveChart] = React.useState(defaultChart);
   const [isPeakEnabled, setIsPeakEnabled] = React.useState(false);

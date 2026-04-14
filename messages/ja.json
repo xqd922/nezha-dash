@@ -53,10 +53,14 @@
   },
   "NetworkChartClient": {
     "avg_delay": "遅延",
+    "packet_loss": "パケットロス率",
     "chart_fetch_error_message": "ネットワークデータの取得に失敗しました。サーバーの監視が有効になっているかどうかを確認してください"
   },
   "NetworkChart": {
-    "ServerMonitorCount": "サービス"
+    "avg_delay": "遅延",
+    "packet_loss": "パケットロス率",
+    "ServerMonitorCount": "サービス",
+    "peak_cut": "ピークカット"
   },
   "ServerDetailClient": {
     "detail_fetch_error_message": "環境変数を確認し、サーバーコンソールを確認してください",
