@@ -114,26 +114,26 @@ export default function ServerCard({ serverInfo }: { serverInfo: NezhaAPISafe })
               <div className="flex items-center font-semibold text-xs">{stg.toFixed(2)}%</div>
               <ServerUsageBar value={stg} />
             </div>
-            <div className={"flex w-14 flex-col"}>
-              <p className="text-muted-foreground text-xs">{t("Upload")}</p>
-              <div className="flex items-center font-semibold text-xs">{formatSpeed(up)}</div>
+            <div className={"flex w-[4.5rem] flex-col"}>
+              <p className="text-[11px] text-muted-foreground">{t("Upload")}</p>
+              <div className="flex items-center font-semibold text-[11px]">{formatSpeed(up)}</div>
             </div>
-            <div className={"flex w-14 flex-col"}>
-              <p className="text-muted-foreground text-xs">{t("Download")}</p>
-              <div className="flex items-center font-semibold text-xs">{formatSpeed(down)}</div>
+            <div className={"flex w-[4.5rem] flex-col"}>
+              <p className="text-[11px] text-muted-foreground">{t("Download")}</p>
+              <div className="flex items-center font-semibold text-[11px]">{formatSpeed(down)}</div>
             </div>
           </section>
           {showNetTransfer && (
             <section className={"flex items-center justify-between gap-1"}>
               <Badge
                 variant="secondary"
-                className="flex-1 items-center justify-center text-nowrap rounded-[8px] border-muted-50 text-[11px] shadow-md shadow-neutral-200/30 dark:shadow-none"
+                className="flex-1 items-center justify-center text-nowrap rounded-[8px] border-muted-50 text-xs shadow-md shadow-neutral-200/30 dark:shadow-none"
               >
                 {t("Upload")}:{formatBytes(serverInfo.status.NetOutTransfer)}
               </Badge>
               <Badge
                 variant="outline"
-                className="flex-1 items-center justify-center text-nowrap rounded-[8px] text-[11px] shadow-md shadow-neutral-200/30 dark:shadow-none"
+                className="flex-1 items-center justify-center text-nowrap rounded-[8px] text-xs shadow-md shadow-neutral-200/30 dark:shadow-none"
               >
                 {t("Download")}:{formatBytes(serverInfo.status.NetInTransfer)}
               </Badge>

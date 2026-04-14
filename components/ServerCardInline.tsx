@@ -95,23 +95,23 @@ export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPIS
               <div className="flex items-center font-semibold text-xs">{stg.toFixed(2)}%</div>
               <ServerUsageBar value={stg} />
             </div>
-            <div className={"flex w-16 flex-col"}>
-              <p className="text-muted-foreground text-xs">{t("Upload")}</p>
-              <div className="flex items-center font-semibold text-xs">{formatSpeed(up)}</div>
-            </div>
-            <div className={"flex w-16 flex-col"}>
-              <p className="text-muted-foreground text-xs">{t("Download")}</p>
-              <div className="flex items-center font-semibold text-xs">{formatSpeed(down)}</div>
+            <div className={"flex w-20 flex-col"}>
+              <p className="text-[11px] text-muted-foreground">{t("Upload")}</p>
+              <div className="flex items-center font-semibold text-[11px]">{formatSpeed(up)}</div>
             </div>
             <div className={"flex w-20 flex-col"}>
-              <p className="text-muted-foreground text-xs">{t("TotalUpload")}</p>
-              <div className="flex items-center font-semibold text-xs">
+              <p className="text-[11px] text-muted-foreground">{t("Download")}</p>
+              <div className="flex items-center font-semibold text-[11px]">{formatSpeed(down)}</div>
+            </div>
+            <div className={"flex w-24 flex-col"}>
+              <p className="text-[11px] text-muted-foreground">{t("TotalUpload")}</p>
+              <div className="flex items-center font-semibold text-[11px]">
                 {formatBytes(serverInfo.status.NetOutTransfer)}
               </div>
             </div>
-            <div className={"flex w-20 flex-col"}>
-              <p className="text-muted-foreground text-xs">{t("TotalDownload")}</p>
-              <div className="flex items-center font-semibold text-xs">
+            <div className={"flex w-24 flex-col"}>
+              <p className="text-[11px] text-muted-foreground">{t("TotalDownload")}</p>
+              <div className="flex items-center font-semibold text-[11px]">
                 {formatBytes(serverInfo.status.NetInTransfer)}
               </div>
             </div>
