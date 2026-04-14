@@ -127,13 +127,13 @@ export default function ServerCard({ serverInfo }: { serverInfo: NezhaAPISafe })
             <section className={"flex items-center justify-between gap-1"}>
               <Badge
                 variant="secondary"
-                className="flex-1 items-center justify-center text-nowrap rounded-[8px] border-muted-50 text-xs shadow-md shadow-neutral-200/30 dark:shadow-none"
+                className="flex-1 items-center justify-center text-nowrap rounded-[8px] border-muted-50 text-[11px] shadow-md shadow-neutral-200/30 dark:shadow-none"
               >
                 {t("Upload")}:{formatBytes(serverInfo.status.NetOutTransfer)}
               </Badge>
               <Badge
                 variant="outline"
-                className="flex-1 items-center justify-center text-nowrap rounded-[8px] text-xs shadow-md shadow-neutral-200/30 dark:shadow-none"
+                className="flex-1 items-center justify-center text-nowrap rounded-[8px] text-[11px] shadow-md shadow-neutral-200/30 dark:shadow-none"
               >
                 {t("Download")}:{formatBytes(serverInfo.status.NetInTransfer)}
               </Badge>
