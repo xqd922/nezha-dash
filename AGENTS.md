@@ -1,50 +1,27 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `app/`: Next.js App Router pages, layouts, and API routes (`app/api/**/route.ts`).
-- `components/`: Reusable React UI and feature components (`components/ui/*` for base UI primitives).
-- `lib/`: Core logic (drivers, env parsing, data fetching, polling, geo helpers).
-- `messages/` and `i18n/`: Locale dictionaries and internationalization wiring.
-- `public/`: Static assets and PWA icons; `styles/` contains global styles.
-- `docker/`: Compose examples for container deployment.
-- `.github/workflows/`: CI, auto-fix, and release automation.
+`app/` contains the Next.js App Router pages, layouts, and API handlers such as `app/api/server/route.ts`. Reusable UI lives in `components/`, with base primitives under `components/ui/` and route-specific client code under `app/(main)/ClientComponents/`. Shared logic, data fetching, and helpers belong in `lib/`. Locale wiring is split between `i18n/` and `messages/`. Static assets and PWA files live in `public/` and `app/`, while `styles/` holds global CSS. Docker deployment examples are in `docker/`.
 
 ## Build, Test, and Development Commands
-- `pnpm install --frozen-lockfile`: Install dependencies exactly from lockfile.
-- `pnpm dev`: Start local dev server on `http://localhost:3040`.
-- `pnpm lint`: Run Biome lint checks.
-- `pnpm check`: Run Biome lint + format validation.
-- `pnpm check:fix`: Auto-fix lint and formatting issues.
-- `pnpm build`: Create production build (also prepares `.next/standalone` assets).
-- `pnpm start`: Run the standalone production server.
-- Docker quick start: run `docker compose up -d` inside `docker/` after creating `docker/.env`.
+Run the scripts from `package.json` with Bun:
+
+- `bun install`: install dependencies from the Bun lockfile.
+- `bun run dev`: start the local app on `http://localhost:3040`.
+- `bun run lint`: run the ESLint checks used by the project.
+- `bun run build`: create a production build and copy standalone assets.
+- `bun run start`: run the standalone production server.
+
+For container testing, run `docker compose up -d` from `docker/` after preparing the required environment variables.
 
 ## Coding Style & Naming Conventions
-- Language stack: TypeScript + React (`strict` mode enabled in `tsconfig.json`).
-- Formatting/linting is enforced by Biome (`biome.json`):
-  - 2-space indentation, 100 char line width.
-  - Double quotes, trailing commas `all`, semicolons `asNeeded`.
-  - Keep Tailwind classes sorted (`nursery/useSortedClasses`).
-- Naming patterns:
-  - React components: `PascalCase` file names (for example `ServerCard.tsx`).
-  - Route handlers: `route.ts` under `app/api/...`.
-  - Utility modules: concise lowercase or domain-based names in `lib/`.
+The codebase is TypeScript-first with `strict` mode enabled. Follow existing React and Next.js patterns. Use `PascalCase` for React component files such as `ServerCard.tsx`, keep API handlers in `route.ts`, and use concise domain-based names in `lib/`. Prettier is configured with `prettier-plugin-tailwindcss` and `@trivago/prettier-plugin-sort-imports`; run formatting before opening a PR.
 
 ## Testing Guidelines
-- There is currently no dedicated unit/integration test script in `package.json`.
-- Required quality gate is: `pnpm lint` and `pnpm build` (matches CI workflow).
-- For UI or data-flow changes, perform a manual smoke check in `pnpm dev` and verify impacted API routes/pages.
+There is no dedicated unit test runner in this repository today. The minimum quality gate is `bun run lint` plus `bun run build`. For UI, routing, or API changes, do a manual smoke test in `bun run dev` and verify the affected page or endpoint.
 
 ## Commit & Pull Request Guidelines
-- Follow Conventional Commit style used in history: `feat:`, `fix:`, `chore:`, optional scopes like `feat(server-detail): ...`.
-- Keep commits focused; avoid mixing refactors with behavior changes.
-- Before opening PR: run `pnpm check` and `pnpm build`.
-- PRs should include:
-  - Clear summary of user-visible/behavioral changes.
-  - Linked issue(s) when applicable (`#123`).
-  - Screenshots or short recordings for UI updates.
-- Note: an auto-fix workflow may push formatting/lint corrections to open PR branches.
+Follow the Conventional Commit style already used in history: `feat:`, `fix:`, `docs:`, `style:`, `i18n:`. Keep each commit focused on one change. PRs should include a short summary, linked issues when relevant, and screenshots or recordings for visible UI changes.
 
 ## Security & Configuration Tips
-- Copy `.env.example` to `.env` for local setup; never commit real tokens.
-- Common secrets include `NezhaAuth` and service base URLs; treat them as sensitive.
+Keep secrets out of git. Store runtime values in local environment files and review any auth or upstream service settings before committing deployment changes.
