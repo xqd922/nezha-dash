@@ -23,6 +23,8 @@
     "Download": "Download",
     "Offline": "Offline",
     "Uptime": "Uptime",
+    "Days": "日",
+    "Hours": "時間",
     "TotalUpload": "Upload",
     "TotalDownload": "Download",
     "Region": "Region"
