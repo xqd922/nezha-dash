@@ -349,6 +349,11 @@ export class NezhaDriver extends BaseDriver {
       }
     }
 
+    const publicNotesFromHtml = await this.fetchPublicNotesFromEmbeddedPage()
+    if (publicNotesFromHtml.size > 0) {
+      return publicNotesFromHtml
+    }
+
     return new Map<number, string>()
   }
 
@@ -447,6 +452,64 @@ export class NezhaDriver extends BaseDriver {
 
       return notes
     }, new Map<number, string>())
+  }
+
+  private async fetchPublicNotesFromEmbeddedPage(): Promise<Map<number, string>> {
+    if (!this.config?.baseUrl || !this.authToken) {
+      return new Map<number, string>()
+    }
+
+    const response = await fetch(`${this.config.baseUrl}/`, {
+      ...this.createFetchOptions({
+        Authorization: this.authToken,
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      }),
+    })
+
+    if (!response.ok) {
+      return new Map<number, string>()
+    }
+
+    const html = await response.text()
+    return this.extractPublicNotesFromEmbeddedPage(html)
+  }
+
+  private extractPublicNotesFromEmbeddedPage(html: string): Map<number, string> {
+    const match = html.match(/this\.servers\s*=\s*JSON\.parse\('([\s\S]*?)'\)/)
+    if (!match?.[1]) {
+      return new Map<number, string>()
+    }
+
+    const decodedPayload = this.decodeEmbeddedJsonString(match[1])
+    if (!decodedPayload) {
+      return new Map<number, string>()
+    }
+
+    let payload: unknown
+    try {
+      payload = JSON.parse(decodedPayload)
+    } catch {
+      return new Map<number, string>()
+    }
+
+    if (!payload || typeof payload !== "object") {
+      return new Map<number, string>()
+    }
+
+    const embeddedPayload = payload as { servers?: NezhaWsServer[] }
+    if (!Array.isArray(embeddedPayload.servers)) {
+      return new Map<number, string>()
+    }
+
+    return this.extractPublicNotes(JSON.stringify({ servers: embeddedPayload.servers }))
+  }
+
+  private decodeEmbeddedJsonString(value: string): string | null {
+    try {
+      return JSON.parse(`"${value}"`)
+    } catch {
+      return null
+    }
   }
 
   private parseServiceMonitors(html: string): ServiceMonitor[] {
