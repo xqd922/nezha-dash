@@ -44,7 +44,7 @@ export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPIS
           >
             {showFlag ? <ServerFlag country_code={country_code} /> : null}
           </div>
-          <div className="relative flex w-28 flex-col">
+          <div className="relative flex w-32 flex-col">
             <p
               className={cn(
                 "break-normal font-bold tracking-tight",
@@ -140,7 +140,7 @@ export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPIS
           >
             {showFlag ? <ServerFlag country_code={country_code} /> : null}
           </div>
-          <div className="relative flex w-28 flex-col">
+          <div className="relative flex w-32 flex-col">
             <p
               className={cn(
                 "break-normal font-bold tracking-tight",
