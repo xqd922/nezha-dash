@@ -1,9 +1,74 @@
 "use server";
 
-import { NezhaAPI, ServerApi } from "@/app/types/nezha-api";
+import { NezhaAPI, NezhaAPIMonitor, ServerApi } from "@/app/types/nezha-api";
 import { MakeOptional } from "@/app/types/utils";
 import getEnv from "@/lib/env-entry";
 import { unstable_noStore as noStore } from "next/cache";
+
+function calculatePacketLoss(delays: number[]) {
+  if (!delays || delays.length === 0) return [];
+
+  const packetLossRates: number[] = [];
+  const windowSize = Math.min(10, Math.max(3, Math.floor(delays.length / 10)));
+  const timeoutThreshold = 3000;
+  const extremeDelayThreshold = 10000;
+
+  for (let i = 0; i < delays.length; i++) {
+    const currentDelay = delays[i];
+    let lossRate = 0;
+
+    if (
+      currentDelay === 0 ||
+      currentDelay === null ||
+      currentDelay === undefined
+    ) {
+      lossRate = 100;
+    } else if (currentDelay >= extremeDelayThreshold) {
+      lossRate = Math.min(
+        95,
+        60 + (currentDelay - extremeDelayThreshold) / 1000,
+      );
+    } else if (currentDelay >= timeoutThreshold) {
+      lossRate = Math.min(50, (currentDelay - timeoutThreshold) / 200);
+    } else {
+      const start = Math.max(0, i - Math.floor(windowSize / 2));
+      const end = Math.min(delays.length, i + Math.ceil(windowSize / 2));
+      const windowDelays = delays.slice(start, end).filter((delay) => delay > 0);
+
+      if (windowDelays.length > 2) {
+        const mean =
+          windowDelays.reduce((sum, delay) => sum + delay, 0) /
+          windowDelays.length;
+        const variance =
+          windowDelays.reduce((sum, delay) => sum + (delay - mean) ** 2, 0) /
+          windowDelays.length;
+        const standardDeviation = Math.sqrt(variance);
+        const coefficientOfVariation = standardDeviation / mean;
+
+        if (coefficientOfVariation > 0.8) {
+          lossRate = Math.min(25, coefficientOfVariation * 15);
+        } else if (coefficientOfVariation > 0.5) {
+          lossRate = Math.min(10, coefficientOfVariation * 8);
+        } else if (coefficientOfVariation > 0.3) {
+          lossRate = Math.min(5, coefficientOfVariation * 5);
+        }
+
+        if (currentDelay > mean * 2.5) {
+          lossRate += Math.min(15, (currentDelay / mean - 2.5) * 10);
+        }
+      }
+    }
+
+    if (i > 0) {
+      const alpha = 0.3;
+      lossRate = alpha * lossRate + (1 - alpha) * packetLossRates[i - 1];
+    }
+
+    packetLossRates.push(Math.max(0, Math.min(100, lossRate)));
+  }
+
+  return packetLossRates.map((rate) => Number(rate.toFixed(2)));
+}
 
 export async function GetNezhaData() {
   noStore();
@@ -123,7 +188,19 @@ export async function GetServerMonitor({ server_id }: { server_id: number }) {
       throw new Error("MonitorData fetch failed: 'result' field is missing");
     }
 
-    return monitorData;
+    const enablePacketLoss =
+      getEnv("EnablePacketLossCalculation") !== "false";
+
+    return monitorData.map((monitor: NezhaAPIMonitor) => {
+      if (enablePacketLoss && monitor.avg_delay?.length > 0) {
+        return {
+          ...monitor,
+          packet_loss: calculatePacketLoss(monitor.avg_delay),
+        };
+      }
+
+      return monitor;
+    });
   } catch (error) {
     console.error("GetServerMonitor error:", error);
     throw error;
