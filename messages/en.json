@@ -122,6 +122,16 @@
     "p_2277-2331_Overview": "Overview",
     "p_2390-2457_wherethetimeis": "where the time is"
   },
+  "billingInfo": {
+    "remaining": "Remaining",
+    "days": "days",
+    "error": "Error",
+    "expired": "Expired",
+    "indefinite": "Indefinite",
+    "price": "Price",
+    "free": "Free",
+    "usage-based": "Usage-based"
+  },
   "Global": {
     "Loading": "Loading...",
     "Distributions": "Servers are distributed in",

@@ -57,7 +57,7 @@ export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPIS
           </div>
         </section>
         <Separator orientation="vertical" className="mx-0 ml-2 h-8" />
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1">
           <section className={cn("grid flex-1 grid-cols-9 items-center gap-3")}>
             <div className={"flex flex-row items-center gap-2 whitespace-nowrap"}>
               <div className="font-semibold text-xs">
@@ -116,8 +116,8 @@ export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPIS
               </div>
             </div>
           </section>
+          {parsedData?.planDataMod && <PlanInfo parsedData={parsedData} />}
         </div>
-        {parsedData?.planDataMod && <PlanInfo parsedData={parsedData} />}
       </Card>
     </Link>
   ) : (
@@ -152,6 +152,7 @@ export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPIS
             {parsedData?.billingDataMod && <BillingInfo parsedData={parsedData} />}
           </div>
         </section>
+        <Separator orientation="vertical" className="mx-0 ml-2 h-8" />
         {parsedData?.planDataMod && <PlanInfo parsedData={parsedData} />}
       </Card>
     </Link>

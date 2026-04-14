@@ -76,7 +76,7 @@ export default function ServerCard({ serverInfo }: { serverInfo: NezhaAPISafe })
         >
           {parsedData?.billingDataMod && <BillingInfo parsedData={parsedData} />}
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col items-center gap-2 lg:items-start">
           <section
             className={cn("grid grid-cols-5 items-center gap-3", {
               "lg:grid-cols-6 lg:gap-4": fixedTopServerName,

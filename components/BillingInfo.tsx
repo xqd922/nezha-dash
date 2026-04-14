@@ -1,12 +1,12 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import RemainPercentBar from "@/components/RemainPercentBar"
-import {
-  getDaysBetweenDatesWithAutoRenewal,
-  type PublicNoteData,
-} from "@/lib/utils"
+import { cn, getDaysBetweenDatesWithAutoRenewal, type PublicNoteData } from "@/lib/utils"
 
 export default function BillingInfo({ parsedData }: { parsedData: PublicNoteData }) {
+  const t = useTranslations("billingInfo")
+
   if (!parsedData.billingDataMod) {
     return null
   }
@@ -29,44 +29,55 @@ export default function BillingInfo({ parsedData }: { parsedData: PublicNoteData
         daysLeftObject = getDaysBetweenDatesWithAutoRenewal(parsedData.billingDataMod)
       } catch (error) {
         console.error(error)
-        return <div className="text-[10px] text-red-600">Remaining: Error</div>
+        return (
+          <div className={cn("text-[10px] text-muted-foreground text-red-600")}>
+            {t("remaining")}: {t("error")}
+          </div>
+        )
       }
     }
   }
 
   const amount = parsedData.billingDataMod.amount
 
-  return (
+  return daysLeftObject.days >= 0 ? (
     <>
       {amount && amount !== "0" && amount !== "-1" ? (
         <p className="text-[10px] text-muted-foreground">
-          Price: {amount}/{parsedData.billingDataMod.cycle}
+          {t("price")}: {amount}/{parsedData.billingDataMod.cycle}
         </p>
       ) : amount === "0" ? (
-        <p className="text-[10px] text-green-600">Free</p>
+        <p className="text-[10px] text-green-600">{t("free")}</p>
       ) : amount === "-1" ? (
-        <p className="text-[10px] text-pink-600">Usage-based</p>
+        <p className="text-[10px] text-pink-600">{t("usage-based")}</p>
       ) : null}
 
-      {hasBillingDates ? (
-        daysLeftObject.days >= 0 ? (
-          <>
-            <div className="text-[10px] text-muted-foreground">
-              Remaining: {isNeverExpire ? "Indefinite" : `${daysLeftObject.days} days`}
-            </div>
-            {!isNeverExpire && (
-              <RemainPercentBar
-                className="mt-0.5"
-                value={daysLeftObject.remainingPercentage * 100}
-              />
-            )}
-          </>
-        ) : (
-          <p className="text-[10px] text-red-600">
-            Expired: {daysLeftObject.days * -1} days
-          </p>
-        )
+      {hasBillingDates && (
+        <div className="text-[10px] text-muted-foreground">
+          {t("remaining")}:{" "}
+          {isNeverExpire ? t("indefinite") : `${daysLeftObject.days} ${t("days")}`}
+        </div>
+      )}
+
+      {hasBillingDates && !isNeverExpire && (
+        <RemainPercentBar className="mt-0.5" value={daysLeftObject.remainingPercentage * 100} />
+      )}
+    </>
+  ) : (
+    <>
+      {amount && amount !== "0" && amount !== "-1" ? (
+        <p className="text-[10px] text-muted-foreground">
+          {t("price")}: {amount}/{parsedData.billingDataMod.cycle}
+        </p>
+      ) : amount === "0" ? (
+        <p className="text-[10px] text-green-600">{t("free")}</p>
+      ) : amount === "-1" ? (
+        <p className="text-[10px] text-pink-600">{t("usage-based")}</p>
       ) : null}
+
+      <p className={cn("text-[10px] text-muted-foreground text-red-600")}>
+        {t("expired")}: {daysLeftObject.days * -1} {t("days")}
+      </p>
     </>
   )
 }

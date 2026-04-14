@@ -11,14 +11,14 @@ export default function RemainPercentBar({
   className?: string
 }) {
   const clampedValue = Math.max(0, Math.min(100, value))
-  const indicatorClassName =
-    clampedValue > 60 ? "bg-green-500" : clampedValue > 30 ? "bg-amber-500" : "bg-red-500"
 
   return (
     <Progress
       value={clampedValue}
-      className={cn("h-1.5 w-full bg-muted/70", className)}
-      indicatorClassName={indicatorClassName}
+      className={cn("h-[3px] w-[70px] rounded-sm", className)}
+      indicatorClassName={
+        clampedValue < 30 ? "bg-red-500" : clampedValue < 70 ? "bg-orange-400" : "bg-green-500"
+      }
     />
   )
 }
