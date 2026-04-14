@@ -85,8 +85,8 @@ export default function ServerCardInline({ serverInfo }: { serverInfo: NezhaAPIS
                 <p className="text-muted-foreground text-xs">{t("Uptime")}</p>
                 <div className="flex items-center font-semibold text-xs">
                   {serverInfo.status.Uptime / 86400 >= 1
-                    ? `${(serverInfo.status.Uptime / 86400).toFixed(0)} ${t("Days")}`
-                    : `${(serverInfo.status.Uptime / 3600).toFixed(0)} ${t("Hours")}`}
+                    ? `${(serverInfo.status.Uptime / 86400).toFixed(0)} ${t("Days") || "Days"}`
+                    : `${(serverInfo.status.Uptime / 3600).toFixed(0)} ${t("Hours") || "Hours"}`}
                 </div>
               </div>
               <div className={"flex w-14 flex-col"}>
