@@ -51,14 +51,16 @@ export default function ServerIPInfo({ server_id }: { server_id: number }) {
           </CardContent>
         </Card>
       )}
-      {data.city?.registered_country?.names.en && (
+      {data.city?.registered_country?.names?.en && (
         <Card className="rounded-[10px] border-none bg-transparent shadow-none ring-0">
           <CardContent className="px-1.5 py-1">
             <section className="flex flex-col items-start gap-0.5">
               <p className="text-xs text-muted-foreground">
                 {t("registered_country")}
               </p>
-              <div className="text-xs">{data.city.registered_country.names.en}</div>
+              <div className="text-xs">
+                {data.city.registered_country.names?.en}
+              </div>
             </section>
           </CardContent>
         </Card>
@@ -73,12 +75,12 @@ export default function ServerIPInfo({ server_id }: { server_id: number }) {
           </CardContent>
         </Card>
       )}
-      {data.city?.city?.names.en && (
+      {data.city?.city?.names?.en && (
         <Card className="rounded-[10px] border-none bg-transparent shadow-none ring-0">
           <CardContent className="px-1.5 py-1">
             <section className="flex flex-col items-start gap-0.5">
               <p className="text-xs text-muted-foreground">{t("city")}</p>
-              <div className="text-xs">{data.city.city.names.en}</div>
+              <div className="text-xs">{data.city.city.names?.en}</div>
             </section>
           </CardContent>
         </Card>

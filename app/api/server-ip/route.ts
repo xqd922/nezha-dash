@@ -1,8 +1,6 @@
 import { auth } from "@/auth";
 import getEnv from "@/lib/env-entry";
 import { GetServerIP } from "@/lib/serverFetch";
-import type { AsnResponse, CityResponse } from "mmdb-lib";
-import { Reader } from "mmdb-lib";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -15,16 +13,64 @@ interface ResError extends Error {
 }
 
 export type IPInfo = {
-  city: CityResponse | null;
-  asn: AsnResponse | null;
+  city: MaxMindCityInfo | null;
+  asn: MaxMindAsnInfo | null;
 };
 
-type LookupReaders = {
-  cityLookup: Reader<CityResponse>;
-  asnLookup: Reader<AsnResponse>;
+type MaxMindErrorResponse = {
+  code?: string;
+  error?: string;
 };
 
-let lookupReadersPromise: Promise<LookupReaders> | null = null;
+type MaxMindNamedRecord = {
+  geoname_id?: number;
+  names?: Record<string, string>;
+};
+
+type MaxMindCountryRecord = MaxMindNamedRecord & {
+  is_in_european_union?: boolean;
+  iso_code?: string;
+};
+
+type MaxMindLocationRecord = {
+  accuracy_radius?: number;
+  latitude?: number;
+  longitude?: number;
+  time_zone?: string;
+};
+
+type MaxMindPostalRecord = {
+  code?: string;
+};
+
+type MaxMindCityInfo = {
+  city?: MaxMindNamedRecord | null;
+  continent?: (MaxMindNamedRecord & { code?: string }) | null;
+  country?: MaxMindCountryRecord | null;
+  location?: MaxMindLocationRecord | null;
+  postal?: MaxMindPostalRecord | null;
+  registered_country?: MaxMindCountryRecord | null;
+};
+
+type MaxMindAsnInfo = {
+  autonomous_system_number?: number;
+  autonomous_system_organization?: string;
+};
+
+type MaxMindTraits = {
+  autonomous_system_number?: number;
+  autonomous_system_organization?: string;
+};
+
+type MaxMindCityResponse = {
+  city?: MaxMindNamedRecord | null;
+  continent?: (MaxMindNamedRecord & { code?: string }) | null;
+  country?: MaxMindCountryRecord | null;
+  location?: MaxMindLocationRecord | null;
+  postal?: MaxMindPostalRecord | null;
+  registered_country?: MaxMindCountryRecord | null;
+  traits?: MaxMindTraits | null;
+};
 
 function createRouteError(message: string, statusCode = 500): ResError {
   const error = new Error(message) as ResError;
@@ -32,41 +78,78 @@ function createRouteError(message: string, statusCode = 500): ResError {
   return error;
 }
 
-async function createLookupReader<T extends CityResponse | AsnResponse>(
-  req: NextRequest,
-  assetPath: string,
-): Promise<Reader<T>> {
-  const assetUrl = new URL(assetPath, req.nextUrl.origin);
-  const response = await fetch(assetUrl, { cache: "no-store" });
+function getMaxMindConfig() {
+  const accountId = getEnv("MAXMIND_ACCOUNT_ID");
+  const licenseKey = getEnv("MAXMIND_LICENSE_KEY");
+  const endpoint =
+    getEnv("MAXMIND_CITY_ENDPOINT") ||
+    "https://geolite.info/geoip/v2.1/city";
 
-  if (!response.ok) {
+  if (!accountId || !licenseKey) {
     throw createRouteError(
-      `IP database file is unavailable: ${assetUrl.pathname}`,
+      "MaxMind credentials are not configured",
       500,
     );
   }
 
-  return new Reader<T>(Buffer.from(await response.arrayBuffer()));
+  return {
+    accountId,
+    licenseKey,
+    endpoint: endpoint.replace(/\/$/, ""),
+  };
 }
 
-async function getLookupReaders(req: NextRequest): Promise<LookupReaders> {
-  if (!lookupReadersPromise) {
-    lookupReadersPromise = Promise.all([
-      createLookupReader<CityResponse>(req, "/maxmind-db/GeoLite2-City.mmdb"),
-      createLookupReader<AsnResponse>(req, "/maxmind-db/GeoLite2-ASN.mmdb"),
-    ])
-      .then(([cityLookup, asnLookup]) => ({
-        cityLookup,
-        asnLookup,
-      }))
-      .catch((error) => {
-        lookupReadersPromise = null;
-        console.error("Failed to initialize IP database readers:", error);
-        throw createRouteError("IP database is unavailable", 500);
-      });
+async function fetchMaxMindIPInfo(ip: string): Promise<IPInfo> {
+  const { accountId, licenseKey, endpoint } = getMaxMindConfig();
+  const response = await fetch(`${endpoint}/${encodeURIComponent(ip)}`, {
+    headers: {
+      Authorization: `Basic ${btoa(`${accountId}:${licenseKey}`)}`,
+      Accept: "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    let errorMessage = "Failed to fetch IP information from MaxMind";
+    let statusCode = response.status;
+
+    const contentType = response.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      const errorPayload =
+        (await response.json().catch(() => null)) as MaxMindErrorResponse | null;
+      if (errorPayload?.error) {
+        errorMessage = errorPayload.error;
+      }
+      if (errorPayload?.code === "IP_ADDRESS_NOT_FOUND") {
+        statusCode = 404;
+      } else if (
+        errorPayload?.code === "IP_ADDRESS_RESERVED" ||
+        errorPayload?.code === "IP_ADDRESS_INVALID"
+      ) {
+        statusCode = 400;
+      }
+    }
+
+    throw createRouteError(errorMessage, statusCode);
   }
 
-  return lookupReadersPromise;
+  const payload = (await response.json()) as MaxMindCityResponse;
+
+  return {
+    city: {
+      city: payload.city ?? null,
+      continent: payload.continent ?? null,
+      country: payload.country ?? null,
+      location: payload.location ?? null,
+      postal: payload.postal ?? null,
+      registered_country: payload.registered_country ?? null,
+    },
+    asn: {
+      autonomous_system_number: payload.traits?.autonomous_system_number,
+      autonomous_system_organization:
+        payload.traits?.autonomous_system_organization,
+    },
+  };
 }
 
 export async function GET(req: NextRequest) {
@@ -100,7 +183,6 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const { cityLookup, asnLookup } = await getLookupReaders(req);
     const ip = await GetServerIP({ server_id: serverIdNum });
 
     if (!ip) {
@@ -110,11 +192,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const data: IPInfo = {
-      city: cityLookup.get(ip) as CityResponse,
-      asn: asnLookup.get(ip) as AsnResponse,
-    };
-
+    const data = await fetchMaxMindIPInfo(ip);
     return NextResponse.json(data, { status: 200 });
   } catch (error) {
     const err = error as ResError;

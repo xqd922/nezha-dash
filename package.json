@@ -3,12 +3,11 @@
   "version": "v0-Cloudflare-Final",
   "private": true,
   "scripts": {
-    "sync:maxmind-db": "node scripts/sync-maxmind-db.mjs",
-    "dev": "bun run sync:maxmind-db && next dev --turbopack -p 3040",
+    "dev": "next dev --turbopack -p 3040",
     "start": "node .next/standalone/server.js",
     "lint": "next lint",
-    "build": "bun run sync:maxmind-db && next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/",
-    "build-dev": "bun run sync:maxmind-db && next build",
+    "build": "next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/",
+    "build-dev": "next build",
     "start-dev": "next start"
   },
   "dependencies": {
