@@ -113,6 +113,16 @@
     "Regions": "Regions",
     "Servers": "servers"
   },
+  "IPInfo": {
+    "analysing": "Analysing...",
+    "asn_number": "ASN Number",
+    "registered_country": "Registered Country",
+    "city": "City",
+    "longitude": "Longitude",
+    "latitude": "Latitude",
+    "time_zone": "Time Zone",
+    "postal_code": "Postal Code"
+  },
   "NotFoundPage": {
     "h1_490-590_404NotFound": "Server Not Found",
     "h1_490-590_404NotFoundBack": " Press here to go back",

@@ -113,6 +113,16 @@
     "Regions": "個地區",
     "Servers": "個伺服器"
   },
+  "IPInfo": {
+    "analysing": "分析中...",
+    "asn_number": "ASN 編號",
+    "registered_country": "註冊國家",
+    "city": "城市",
+    "longitude": "經度",
+    "latitude": "緯度",
+    "time_zone": "時區",
+    "postal_code": "郵遞區號"
+  },
   "NotFoundPage": {
     "h1_490-590_404NotFound": "伺服器未找到",
     "h1_490-590_404NotFoundBack": "返回",

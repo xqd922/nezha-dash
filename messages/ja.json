@@ -113,6 +113,16 @@
     "Regions": "つの地域に分散されています",
     "Servers": "サーバー"
   },
+  "IPInfo": {
+    "analysing": "解析中...",
+    "asn_number": "ASN番号",
+    "registered_country": "登録国",
+    "city": "都市",
+    "longitude": "経度",
+    "latitude": "緯度",
+    "time_zone": "タイムゾーン",
+    "postal_code": "郵便番号"
+  },
   "NotFoundPage": {
     "h1_490-590_404NotFound": "サーバーは見つかりません",
     "h1_490-590_404NotFoundBack": "戻る",

@@ -264,3 +264,48 @@ export async function GetServerDetail({ server_id }: { server_id: number }) {
     throw error; // Rethrow the error to be handled by the caller
   }
 }
+
+export async function GetServerIP({ server_id }: { server_id: number }) {
+  let nezhaBaseUrl = getEnv("NezhaBaseUrl");
+  if (!nezhaBaseUrl) {
+    console.error("NezhaBaseUrl is not set");
+    throw new Error("NezhaBaseUrl is not set");
+  }
+
+  nezhaBaseUrl = nezhaBaseUrl.replace(/\/$/, "");
+
+  try {
+    const response = await fetch(`${nezhaBaseUrl}/api/v1/server/details`, {
+      headers: {
+        Authorization: getEnv("NezhaAuth") as string,
+      },
+      next: {
+        revalidate: 0,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to fetch data: ${response.status} ${errorText}`);
+    }
+
+    const resData = await response.json();
+    const nezhaData = resData.result as NezhaAPI[] | undefined;
+
+    if (!nezhaData || !Array.isArray(nezhaData)) {
+      console.error("Server IP fetch failed:", resData);
+      throw new Error("Server IP fetch failed: 'result' field is missing");
+    }
+
+    const server = nezhaData.find((element) => element.id === server_id);
+
+    if (!server) {
+      throw new Error(`Server with ID ${server_id} not found`);
+    }
+
+    return server.valid_ip || server.ipv4 || server.ipv6 || "";
+  } catch (error) {
+    console.error("GetServerIP error:", error);
+    throw error;
+  }
+}
