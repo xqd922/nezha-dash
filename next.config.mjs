@@ -1,3 +1,4 @@
+import path from "node:path";
 import withPWAInit from "@ducanh2912/next-pwa";
 import withBundleAnalyzer from "@next/bundle-analyzer";
 import createNextIntlPlugin from "next-intl/plugin";
@@ -30,6 +31,14 @@ const nextConfig = {
     fetches: {
       fullUrl: true,
     },
+  },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...(config.resolve.alias ?? {}),
+      net: path.resolve("./lib/shims/net.cjs"),
+    };
+
+    return config;
   },
 };
 export default bundleAnalyzer(withPWA(withNextIntl(nextConfig)));

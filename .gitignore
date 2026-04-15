@@ -41,6 +41,7 @@ next-env.d.ts
 /public/swe-worker-*.js
 /public/workbox*.js
 /public/workbox*.js.map
+/public/maxmind-db/
 
 /.idea/
 

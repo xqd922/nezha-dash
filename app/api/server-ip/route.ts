@@ -1,13 +1,13 @@
-import fs from "node:fs";
-import path from "node:path";
 import { auth } from "@/auth";
 import getEnv from "@/lib/env-entry";
 import { GetServerIP } from "@/lib/serverFetch";
-import { type AsnResponse, type CityResponse, Reader } from "maxmind";
+import type { AsnResponse, CityResponse } from "mmdb-lib";
+import { Reader } from "mmdb-lib";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
+export const runtime = "edge";
 
 interface ResError extends Error {
   statusCode?: number;
@@ -15,8 +15,8 @@ interface ResError extends Error {
 }
 
 export type IPInfo = {
-  city: CityResponse;
-  asn: AsnResponse;
+  city: CityResponse | null;
+  asn: AsnResponse | null;
 };
 
 type LookupReaders = {
@@ -24,7 +24,7 @@ type LookupReaders = {
   asnLookup: Reader<AsnResponse>;
 };
 
-let lookupReaders: LookupReaders | null = null;
+let lookupReadersPromise: Promise<LookupReaders> | null = null;
 
 function createRouteError(message: string, statusCode = 500): ResError {
   const error = new Error(message) as ResError;
@@ -32,35 +32,41 @@ function createRouteError(message: string, statusCode = 500): ResError {
   return error;
 }
 
-function getLookupReaders(): LookupReaders {
-  if (lookupReaders) {
-    return lookupReaders;
+async function createLookupReader<T extends CityResponse | AsnResponse>(
+  req: NextRequest,
+  assetPath: string,
+): Promise<Reader<T>> {
+  const assetUrl = new URL(assetPath, req.nextUrl.origin);
+  const response = await fetch(assetUrl, { cache: "no-store" });
+
+  if (!response.ok) {
+    throw createRouteError(
+      `IP database file is unavailable: ${assetUrl.pathname}`,
+      500,
+    );
   }
 
-  try {
-    lookupReaders = {
-      cityLookup: new Reader<CityResponse>(
-        fs.readFileSync(
-          path.join(process.cwd(), "lib", "maxmind-db", "GeoLite2-City.mmdb"),
-        ),
-      ),
-      asnLookup: new Reader<AsnResponse>(
-        fs.readFileSync(
-          path.join(process.cwd(), "lib", "maxmind-db", "GeoLite2-ASN.mmdb"),
-        ),
-      ),
-    };
+  return new Reader<T>(Buffer.from(await response.arrayBuffer()));
+}
 
-    return lookupReaders;
-  } catch (error) {
-    console.error("Failed to initialize IP database readers:", error);
-
-    if ((error as NodeJS.ErrnoException)?.code === "ENOENT") {
-      throw createRouteError("IP database files are missing", 500);
-    }
-
-    throw createRouteError("IP database is unavailable", 500);
+async function getLookupReaders(req: NextRequest): Promise<LookupReaders> {
+  if (!lookupReadersPromise) {
+    lookupReadersPromise = Promise.all([
+      createLookupReader<CityResponse>(req, "/maxmind-db/GeoLite2-City.mmdb"),
+      createLookupReader<AsnResponse>(req, "/maxmind-db/GeoLite2-ASN.mmdb"),
+    ])
+      .then(([cityLookup, asnLookup]) => ({
+        cityLookup,
+        asnLookup,
+      }))
+      .catch((error) => {
+        lookupReadersPromise = null;
+        console.error("Failed to initialize IP database readers:", error);
+        throw createRouteError("IP database is unavailable", 500);
+      });
   }
+
+  return lookupReadersPromise;
 }
 
 export async function GET(req: NextRequest) {
@@ -94,7 +100,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const { cityLookup, asnLookup } = getLookupReaders();
+    const { cityLookup, asnLookup } = await getLookupReaders(req);
     const ip = await GetServerIP({ server_id: serverIdNum });
 
     if (!ip) {
@@ -118,4 +124,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: message }, { status: statusCode });
   }
 }
-
