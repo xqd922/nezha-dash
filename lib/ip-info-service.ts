@@ -123,19 +123,19 @@ class IPInfoService {
 
   private transformResponse(data: MaxMindCityResponse): IPInfo {
     return {
-      city: {
+      city: data ? {
         city: data.city ?? null,
         continent: data.continent ?? null,
         country: data.country ?? null,
         location: data.location ?? null,
         postal: data.postal ?? null,
         registered_country: data.registered_country ?? null,
-      },
-      asn: {
-        autonomous_system_number: data.traits?.autonomous_system_number,
+      } : null,
+      asn: data?.traits ? {
+        autonomous_system_number: data.traits.autonomous_system_number,
         autonomous_system_organization:
-          data.traits?.autonomous_system_organization,
-      },
+          data.traits.autonomous_system_organization,
+      } : null,
     };
   }
 
