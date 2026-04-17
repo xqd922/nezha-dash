@@ -39,6 +39,8 @@
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-shine: shine 5s linear infinite;
+  --animate-mask-left-to-right: mask-left-to-right var(--animation-duration, 0.5s) ease-in-out forwards;
 
   @keyframes accordion-down {
     from {
@@ -54,6 +56,25 @@
     }
     to {
       height: 0;
+    }
+  }
+  @keyframes shine {
+    0% {
+      background-position: -100% top;
+    }
+    70% {
+      background-position: 250% top;
+    }
+    100% {
+      background-position: 250% top;
+    }
+  }
+  @keyframes mask-left-to-right {
+    from {
+      mask-position: left;
+    }
+    to {
+      mask-position: right;
     }
   }
 }
@@ -146,6 +167,7 @@
     --chart-8: 252 50% 50%;
     --chart-9: 288 50% 50%;
     --chart-10: 324 50% 50%;
+    --timing: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
@@ -316,4 +338,71 @@
 
 .scrollbar-hidden::-webkit-scrollbar {
   display: none; /* Chrome, Safari 和 Opera */
+}
+
+.tooltip-animate {
+  opacity: 0;
+  filter: blur(5px);
+  animation: tooltip-fade-in 0.1s ease-in-out forwards;
+}
+
+@keyframes tooltip-fade-in {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+/* Thanks to next.js. */
+[data-issues-count-animation] {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+[data-issues-count-animation] > div {
+  text-align: center;
+}
+
+[data-issues-count-exit].animate {
+  animation: fadeOut 300ms var(--timing) forwards;
+}
+
+[data-issues-count-enter].animate {
+  animation: fadeIn 300ms var(--timing) forwards;
+}
+
+[data-issues-count-plural] {
+  display: inline-block;
+  animation: fadeIn 300ms var(--timing) forwards;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    filter: blur(2px);
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-12px);
+    filter: blur(2px);
+  }
 }

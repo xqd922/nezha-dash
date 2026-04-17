@@ -1,11 +1,11 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
 interface Props {
-  max: number;
-  value: number;
-  min: number;
-  className?: string;
-  primaryColor?: string;
+  max: number
+  value: number
+  min: number
+  className?: string
+  primaryColor?: string
 }
 
 export default function AnimatedCircularProgressBar({
@@ -15,13 +15,13 @@ export default function AnimatedCircularProgressBar({
   primaryColor,
   className,
 }: Props) {
-  const circumference = 2 * Math.PI * 45;
-  const percentPx = circumference / 100;
-  const currentPercent = ((value - min) / (max - min)) * 100;
+  const circumference = 2 * Math.PI * 45
+  const percentPx = circumference / 100
+  const currentPercent = ((value - min) / (max - min)) * 100
 
   return (
     <div
-      className={cn("relative size-40 text-2xl font-semibold", className)}
+      className={cn("relative size-40 font-semibold text-2xl", className)}
       style={
         {
           "--circle-size": "100px",
@@ -37,12 +37,8 @@ export default function AnimatedCircularProgressBar({
         } as React.CSSProperties
       }
     >
-      <svg
-        fill="none"
-        className="size-full"
-        strokeWidth="2"
-        viewBox="0 0 100 100"
-      >
+      <svg fill="none" className="size-full" strokeWidth="2" viewBox="0 0 100 100">
+        <title>Circular Progress Bar</title>
         {currentPercent <= 90 && currentPercent >= 0 && (
           <circle
             cx="50"
@@ -52,7 +48,7 @@ export default function AnimatedCircularProgressBar({
             strokeDashoffset="0"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="opacity-100 stroke-muted"
+            className="stroke-muted opacity-100"
             style={
               {
                 "--stroke-percent": 90 - currentPercent,
@@ -62,8 +58,7 @@ export default function AnimatedCircularProgressBar({
                 transform:
                   "rotate(calc(1turn - 90deg - (var(--gap-percent) * var(--percent-to-deg) * var(--offset-factor-secondary)))) scaleY(-1)",
                 transition: "all var(--transition-length) ease var(--delay)",
-                transformOrigin:
-                  "calc(var(--circle-size) / 2) calc(var(--circle-size) / 2)",
+                transformOrigin: "calc(var(--circle-size) / 2) calc(var(--circle-size) / 2)",
               } as React.CSSProperties
             }
           />
@@ -76,8 +71,8 @@ export default function AnimatedCircularProgressBar({
           strokeDashoffset="0"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={cn("opacity-100 stroke-current", {
-            "stroke-[var(--stroke-primary-color)]": primaryColor,
+          className={cn("stroke-current opacity-100", {
+            "stroke-(--stroke-primary-color)": primaryColor,
           })}
           style={
             {
@@ -90,18 +85,17 @@ export default function AnimatedCircularProgressBar({
               transitionProperty: "stroke-dasharray,transform",
               transform:
                 "rotate(calc(-90deg + var(--gap-percent) * var(--offset-factor) * var(--percent-to-deg)))",
-              transformOrigin:
-                "calc(var(--circle-size) / 2) calc(var(--circle-size) / 2)",
+              transformOrigin: "calc(var(--circle-size) / 2) calc(var(--circle-size) / 2)",
             } as React.CSSProperties
           }
         />
       </svg>
       <span
         data-current-value={currentPercent}
-        className="duration-[var(--transition-length)] delay-[var(--delay)] absolute inset-0 m-auto size-fit ease-linear animate-in fade-in"
+        className="fade-in absolute inset-0 m-auto size-fit animate-in delay-(--delay) duration-(--transition-length) ease-linear"
       >
         {currentPercent}
       </span>
     </div>
-  );
+  )
 }

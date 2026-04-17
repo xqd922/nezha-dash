@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimateCountClient } from "@/components/AnimatedCount";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ModeToggle } from "@/components/ThemeSwitcher";
 import { Separator } from "@/components/ui/separator";
@@ -8,7 +9,7 @@ import getEnv from "@/lib/env-entry";
 import { DateTime } from "luxon";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 function Header() {
   const t = useTranslations("Header");
@@ -98,33 +99,31 @@ function Links() {
 }
 
 // https://github.com/streamich/react-use/blob/master/src/useInterval.ts
-const useInterval = (callback: () => void, delay: number | null) => {
-  const savedCallback = useRef<() => void>(() => {});
-  useEffect(() => {
-    savedCallback.current = callback;
+const useCurrentTime = () => {
+  const [time, setTime] = useState({
+    hh: DateTime.now().setLocale("en-US").hour,
+    mm: DateTime.now().setLocale("en-US").minute,
+    ss: DateTime.now().setLocale("en-US").second,
   });
+
   useEffect(() => {
-    if (delay !== null) {
-      const interval = setInterval(() => savedCallback.current(), delay || 0);
-      return () => clearInterval(interval);
-    }
-    return undefined;
-  }, [delay]);
+    const intervalId = setInterval(() => {
+      const now = DateTime.now().setLocale("en-US");
+      setTime({ hh: now.hour, mm: now.minute, ss: now.second });
+    }, 1000);
+    return () => clearInterval(intervalId);
+  }, []);
+
+  return time;
 };
+
 function Overview() {
   const t = useTranslations("Overview");
-  const [mouted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
   }, []);
-  const timeOption = DateTime.TIME_SIMPLE;
-  timeOption.hour12 = true;
-  const [timeString, setTimeString] = useState(
-    DateTime.now().setLocale("en-US").toLocaleString(timeOption),
-  );
-  useInterval(() => {
-    setTimeString(DateTime.now().setLocale("en-US").toLocaleString(timeOption));
-  }, 1000);
+  const time = useCurrentTime();
   return (
     <section className={"mt-10 flex flex-col md:mt-16"}>
       <p className="text-base font-semibold">{t("p_2277-2331_Overview")}</p>
@@ -132,8 +131,16 @@ function Overview() {
         <p className="text-sm font-medium opacity-50">
           {t("p_2390-2457_wherethetimeis")}
         </p>
-        {mouted ? (
-          <p className="text-sm font-medium">{timeString}</p>
+        {mounted ? (
+          <div className="flex items-center text-sm font-medium">
+            <AnimateCountClient count={time.hh} minDigits={2} />
+            <span className="mb-px text-sm font-medium opacity-50">:</span>
+            <AnimateCountClient count={time.mm} minDigits={2} />
+            <span className="mb-px text-sm font-medium opacity-50">:</span>
+            <span className="text-sm font-medium">
+              <AnimateCountClient count={time.ss} minDigits={2} />
+            </span>
+          </div>
         ) : (
           <Skeleton className="h-[20px] w-[50px] rounded-[5px] bg-muted-foreground/10 animate-none"></Skeleton>
         )}
