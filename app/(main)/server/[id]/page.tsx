@@ -32,7 +32,6 @@ export default function Page(props: { params: Promise<{ id: string }> }) {
       <div style={{ display: currentTab === tabs[0] ? "block" : "none" }}>
         <ServerDetailChartClient
           server_id={Number(params.id)}
-          show={currentTab === tabs[0]}
         />
       </div>
       <div style={{ display: currentTab === tabs[1] ? "block" : "none" }}>

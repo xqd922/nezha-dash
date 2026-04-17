@@ -31,7 +31,7 @@ export function ServerDetailLoading() {
         <BackIcon />
         <Skeleton className="h-[20px] w-24 rounded-[5px] bg-muted-foreground/10 animate-none"></Skeleton>
       </div>
-      <Skeleton className="flex flex-wrap gap-2 h-[160px] w-full mt-3 rounded-[5px] bg-muted-foreground/10 animate-none"></Skeleton>
+      <Skeleton className="flex flex-wrap gap-2 h-[81px] w-1/2 mt-3 rounded-[5px] bg-muted-foreground/10 animate-none"></Skeleton>
     </>
   );
 }

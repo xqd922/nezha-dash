@@ -1,16 +1,15 @@
 "use client";
 
 import { ServerDetailChartLoading } from "@/app/(main)/ClientComponents/ServerDetailLoading";
-import { NezhaAPISafe, ServerApi } from "@/app/types/nezha-api";
+import { useServerData } from "@/app/context/server-data-context";
+import { NezhaAPISafe } from "@/app/types/nezha-api";
 import AnimatedCircularProgressBar from "@/components/ui/animated-circular-progress-bar";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
-import getEnv from "@/lib/env-entry";
 import {
   formatBytes,
   formatNezhaInfo,
   formatRelativeTime,
-  nezhaFetcher,
 } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -23,8 +22,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import useSWR from "swr";
-import useSWRImmutable from "swr/immutable";
 
 type cpuChartData = {
   timeStamp: string;
@@ -61,32 +58,15 @@ type connectChartData = {
 
 export default function ServerDetailChartClient({
   server_id,
-  show,
 }: {
   server_id: number;
-  show: boolean;
 }) {
   const t = useTranslations("ServerDetailChartClient");
 
-  const { data: allFallbackData } = useSWRImmutable<ServerApi>(
-    "/api/server",
-    nezhaFetcher,
-  );
-  const fallbackData = allFallbackData?.result?.find(
-    (item) => item.id === server_id,
-  );
-
-  const { data, error } = useSWR<NezhaAPISafe>(
-    `/api/detail?server_id=${server_id}`,
-    nezhaFetcher,
-    {
-      refreshInterval: Number(getEnv("NEXT_PUBLIC_NezhaFetchInterval")) || 5000,
-      isVisible: () => show,
-      fallbackData,
-      revalidateOnMount: false,
-      revalidateIfStale: false,
-    },
-  );
+  const { data: serverList, error } = useServerData();
+  const data = serverList?.result?.find((item) => item.id === server_id) as
+    | NezhaAPISafe
+    | undefined;
 
   if (error) {
     return (

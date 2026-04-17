@@ -1,12 +1,12 @@
 "use client";
 
-import { ServerApi } from "@/app/types/nezha-api";
+import { useServerData } from "@/app/context/server-data-context";
 import { Loader } from "@/components/loading/Loader";
 import { Card, CardContent } from "@/components/ui/card";
 import getEnv from "@/lib/env-entry";
 import { useFilter } from "@/lib/network-filter-context";
 import { useStatus } from "@/lib/status-context";
-import { cn, formatBytes, nezhaFetcher } from "@/lib/utils";
+import { cn, formatBytes } from "@/lib/utils";
 import blogMan from "@/public/blog-man.webp";
 import {
   ArrowDownCircleIcon,
@@ -14,19 +14,12 @@ import {
 } from "@heroicons/react/20/solid";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import useSWR from "swr";
 
 export default function ServerOverviewClient() {
   const { status, setStatus } = useStatus();
   const { filter, setFilter } = useFilter();
   const t = useTranslations("ServerOverviewClient");
-  const { data, error, isLoading } = useSWR<ServerApi>(
-    "/api/server",
-    nezhaFetcher,
-    {
-      refreshInterval: Number(getEnv("NEXT_PUBLIC_NezhaFetchInterval")) || 2000,
-    },
-  );
+  const { data, error, isLoading } = useServerData();
   const disableCartoon = getEnv("NEXT_PUBLIC_DisableCartoon") === "true";
 
   if (error) {

@@ -1,26 +1,22 @@
 "use client";
 
 import { ServerDetailLoading } from "@/app/(main)/ClientComponents/ServerDetailLoading";
-import { NezhaAPISafe, ServerApi } from "@/app/types/nezha-api";
+import { useServerData } from "@/app/context/server-data-context";
 import { BackIcon } from "@/components/Icon";
 import ServerFlag from "@/components/ServerFlag";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import getEnv from "@/lib/env-entry";
 import {
   cn,
   convertEmojiToCountryCode,
   formatBytes,
   isEmojiFlag,
-  nezhaFetcher,
 } from "@/lib/utils";
 import countries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
 import { useTranslations } from "next-intl";
 import { notFound, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import useSWR from "swr";
-import useSWRImmutable from "swr/immutable";
 
 countries.registerLocale(enLocale);
 
@@ -64,28 +60,12 @@ export default function ServerDetailClient({
     }
   };
 
-  const { data: allFallbackData, isLoading } = useSWRImmutable<ServerApi>(
-    "/api/server",
-    nezhaFetcher,
-  );
-  const fallbackData = allFallbackData?.result?.find(
-    (item) => item.id === server_id,
-  );
+  const { data: serverList, error, isLoading } = useServerData();
+  const data = serverList?.result?.find((item) => item.id === server_id);
 
-  if (!fallbackData && !isLoading) {
+  if (!data && !isLoading) {
     notFound();
   }
-
-  const { data, error } = useSWR<NezhaAPISafe>(
-    `/api/detail?server_id=${server_id}`,
-    nezhaFetcher,
-    {
-      refreshInterval: Number(getEnv("NEXT_PUBLIC_NezhaFetchInterval")) || 5000,
-      fallbackData,
-      revalidateOnMount: false,
-      revalidateIfStale: false,
-    },
-  );
 
   if (error) {
     return (
