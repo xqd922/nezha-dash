@@ -178,25 +178,26 @@ export default function ServerDetailClient({
             </section>
           </CardContent>
         </Card>
-        <Card className="rounded-[10px] bg-transparent border-none shadow-none ring-0">
-          <CardContent className="px-1.5 py-1">
-            <section className="flex flex-col items-start gap-0.5">
-              <p className="text-xs text-muted-foreground">{t("Region")}</p>
-              <section className="flex items-start gap-1">
-                {data?.host.CountryCode &&
-                  getCountryDisplayName(data.host.CountryCode) && (
+        {data?.host.CountryCode && (
+          <Card className="rounded-[10px] bg-transparent border-none shadow-none ring-0">
+            <CardContent className="px-1.5 py-1">
+              <section className="flex flex-col items-start gap-0.5">
+                <p className="text-xs text-muted-foreground">{t("Region")}</p>
+                <section className="flex items-start gap-1">
+                  {getCountryDisplayName(data.host.CountryCode) && (
                     <div className="text-xs text-start">
                       {getCountryDisplayName(data.host.CountryCode)}
                     </div>
                   )}
-                <ServerFlag
-                  className="text-[11px] -mt-[1px]"
-                  country_code={data?.host.CountryCode}
-                />
+                  <ServerFlag
+                    className="text-[11px] -mt-[1px]"
+                    country_code={data.host.CountryCode}
+                  />
+                </section>
               </section>
-            </section>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </section>
       <section className="flex flex-wrap gap-2 mt-1">
         {data?.host.Platform && (
