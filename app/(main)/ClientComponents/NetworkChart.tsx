@@ -183,10 +183,10 @@ export const NetworkChart = React.memo(function NetworkChart({
             type="button"
             key={key}
             data-active={activeChart === key}
-            className="relative z-30 flex grow basis-0 cursor-pointer flex-col justify-center gap-1 border-b border-neutral-200 px-6 py-4 text-left data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-6 dark:border-neutral-800"
+            className="relative z-30 flex min-w-0 cursor-pointer flex-col justify-center gap-1 border-b border-neutral-200 px-6 py-4 text-left data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-6 dark:border-neutral-800"
             onClick={() => handleButtonClick(key)}
           >
-            <span className="whitespace-nowrap text-xs text-muted-foreground">
+            <span className="truncate whitespace-nowrap text-xs text-muted-foreground">
               {key}
             </span>
             <div className="flex flex-col gap-0.5">
@@ -375,7 +375,9 @@ export const NetworkChart = React.memo(function NetworkChart({
             </div>
           </div>
         </div>
-        <div className="flex w-full flex-wrap">{chartButtons}</div>
+        <div className="grid w-full grid-cols-2 sm:grid-cols-3 xl:grid-cols-6">
+          {chartButtons}
+        </div>
       </CardHeader>
       <CardContent className="py-4 pr-2 pl-0 sm:pt-6 sm:pr-6 sm:pb-6 sm:pl-2">
         <ChartContainer
