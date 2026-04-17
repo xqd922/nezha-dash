@@ -6,7 +6,7 @@
     "dev": "next dev --turbopack -p 3040",
     "start": "node .next/standalone/server.js",
     "lint": "next lint",
-    "build": "next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/",
+    "build": "next build && cp -R .next/static .next/standalone/.next/ && cp -R public .next/standalone/",
     "build-dev": "next build",
     "start-dev": "next start"
   },
