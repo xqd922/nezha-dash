@@ -7,12 +7,33 @@ import ServerFlag from "@/components/ServerFlag";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import getEnv from "@/lib/env-entry";
-import { cn, formatBytes, nezhaFetcher } from "@/lib/utils";
+import {
+  cn,
+  convertEmojiToCountryCode,
+  formatBytes,
+  isEmojiFlag,
+  nezhaFetcher,
+} from "@/lib/utils";
+import countries from "i18n-iso-countries";
+import enLocale from "i18n-iso-countries/langs/en.json";
 import { useTranslations } from "next-intl";
 import { notFound, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
 import useSWRImmutable from "swr/immutable";
+
+countries.registerLocale(enLocale);
+
+function getCountryDisplayName(countryCode: string): string {
+  if (isEmojiFlag(countryCode)) {
+    const convertedCode = convertEmojiToCountryCode(countryCode);
+    if (convertedCode) {
+      return countries.getName(convertedCode, "en") || "";
+    }
+    return "";
+  }
+  return countries.getName(countryCode, "en") || "";
+}
 
 export default function ServerDetailClient({
   server_id,
@@ -162,9 +183,12 @@ export default function ServerDetailClient({
             <section className="flex flex-col items-start gap-0.5">
               <p className="text-xs text-muted-foreground">{t("Region")}</p>
               <section className="flex items-start gap-1">
-                <div className="text-xs text-start">
-                  {data?.host.CountryCode.toUpperCase()}
-                </div>
+                {data?.host.CountryCode &&
+                  getCountryDisplayName(data.host.CountryCode) && (
+                    <div className="text-xs text-start">
+                      {getCountryDisplayName(data.host.CountryCode)}
+                    </div>
+                  )}
                 <ServerFlag
                   className="text-[11px] -mt-[1px]"
                   country_code={data?.host.CountryCode}

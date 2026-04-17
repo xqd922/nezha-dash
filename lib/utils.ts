@@ -116,3 +116,69 @@ export function formatTime(timestamp: number): string {
   const seconds = date.getSeconds().toString().padStart(2, "0");
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
+
+const EMOJI_TO_COUNTRY_CODE: { [key: string]: string } = {
+  "🇭🇰": "HK",
+  "🇨🇳": "CN",
+  "🇯🇵": "JP",
+  "🇸🇬": "SG",
+  "🇩🇪": "DE",
+  "🇳🇱": "NL",
+  "🇺🇸": "US",
+  "🇬🇧": "GB",
+  "🇫🇷": "FR",
+  "🇰🇷": "KR",
+  "🇦🇺": "AU",
+  "🇨🇦": "CA",
+  "🇧🇷": "BR",
+  "🇮🇳": "IN",
+  "🇷🇺": "RU",
+  "🇮🇹": "IT",
+  "🇪🇸": "ES",
+  "🇹🇼": "TW",
+  "🇲🇴": "MO",
+  "🇹🇭": "TH",
+  "🇲🇾": "MY",
+  "🇻🇳": "VN",
+  "🇵🇭": "PH",
+  "🇮🇩": "ID",
+  "🇳🇴": "NO",
+  "🇸🇪": "SE",
+  "🇫🇮": "FI",
+  "🇩🇰": "DK",
+  "🇨🇭": "CH",
+  "🇦🇹": "AT",
+  "🇧🇪": "BE",
+  "🇮🇪": "IE",
+  "🇵🇹": "PT",
+  "🇵🇱": "PL",
+  "🇨🇿": "CZ",
+  "🇭🇺": "HU",
+  "🇬🇷": "GR",
+  "🇹🇷": "TR",
+  "🇺🇦": "UA",
+  "🇷🇴": "RO",
+  "🇧🇬": "BG",
+  "🇭🇷": "HR",
+  "🇸🇮": "SI",
+  "🇸🇰": "SK",
+  "🇱🇹": "LT",
+  "🇱🇻": "LV",
+  "🇪🇪": "EE",
+  "🇮🇸": "IS",
+  "🇱🇺": "LU",
+  "🇲🇹": "MT",
+  "🇨🇾": "CY",
+};
+
+export function isEmojiFlag(str: string): boolean {
+  const flagEmojiRegex = /[\u{1F1E6}-\u{1F1FF}]{2}/u;
+  return flagEmojiRegex.test(str);
+}
+
+export function convertEmojiToCountryCode(emoji: string): string | null {
+  if (!isEmojiFlag(emoji)) {
+    return emoji.toUpperCase();
+  }
+  return EMOJI_TO_COUNTRY_CODE[emoji] || null;
+}
