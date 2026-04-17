@@ -8,7 +8,9 @@ import { nezhaFetcher } from "@/lib/utils";
 
 interface ServerDataContextType {
   data: ServerApi | undefined;
-  error: Error | undefined;
+  // SWR 错误由 nezhaFetcher 抛出，带 status/info 等自定义字段，保留宽松类型
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  error: any;
   isLoading: boolean;
 }
 
