@@ -2,6 +2,7 @@ import { useTranslations } from "next-intl"
 import pack from "@/package.json"
 
 const GITHUB_URL = "https://github.com/hamster1963/nezha-dash"
+const SOURCE_URL = "https://github.com/xqd922/nezha-dash/tree/cloudflare"
 const PERSONAL_URL = "https://buycoffee.top"
 
 type LinkProps = {
@@ -34,7 +35,7 @@ export default function Footer() {
         <p className={`mt-3 flex gap-1 ${baseTextStyles}`}>
           {t("p_146-598_Findthecodeon")}{" "}
           <FooterLink href={GITHUB_URL}>{t("a_303-585_GitHub")}</FooterLink>
-          <FooterLink href={`${GITHUB_URL}/releases/tag/${version}`}>{version}</FooterLink>
+          <FooterLink href={SOURCE_URL}>{version}</FooterLink>
         </p>
         <section className={`mt-1 flex items-center gap-2 ${baseTextStyles}`}>
           {t("section_607-869_2020")}
