@@ -34,7 +34,7 @@ export default function Footer() {
         <p className={`mt-3 flex gap-1 ${baseTextStyles}`}>
           {t("p_146-598_Findthecodeon")}{" "}
           <FooterLink href={GITHUB_URL}>{t("a_303-585_GitHub")}</FooterLink>
-          <FooterLink href={`${GITHUB_URL}/releases/tag/v${version}`}>v{version}</FooterLink>
+          <FooterLink href={`${GITHUB_URL}/releases/tag/${version}`}>{version}</FooterLink>
         </p>
         <section className={`mt-1 flex items-center gap-2 ${baseTextStyles}`}>
           {t("section_607-869_2020")}
