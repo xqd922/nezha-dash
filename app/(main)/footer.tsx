@@ -1,7 +1,7 @@
 import { useTranslations } from "next-intl"
 import pack from "@/package.json"
 
-const GITHUB_URL = "https://github.com/hamster1963/nezha-dash"
+const GITHUB_URL = "https://github.com/xqd922/nezha-dash"
 const SOURCE_URL = "https://github.com/xqd922/nezha-dash/tree/cloudflare"
 const PERSONAL_URL = "https://buycoffee.top"
 
