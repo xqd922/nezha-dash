@@ -91,7 +91,7 @@ export default function ServerDetailClient({
         {data?.name}
       </div>
       <section className="flex flex-wrap gap-2 mt-3">
-        <Card className="rounded-[10px] bg-transparent border-none shadow-none">
+        <Card className="rounded-[10px] bg-transparent border-none shadow-none ring-0">
           <CardContent className="px-1.5 py-1">
             <section className="flex flex-col items-start gap-0.5">
               <p className="text-xs text-muted-foreground">{t("status")}</p>
@@ -109,7 +109,7 @@ export default function ServerDetailClient({
             </section>
           </CardContent>
         </Card>
-        <Card className="rounded-[10px] bg-transparent border-none shadow-none">
+        <Card className="rounded-[10px] bg-transparent border-none shadow-none ring-0">
           <CardContent className="px-1.5 py-1">
             <section className="flex flex-col items-start gap-0.5">
               <p className="text-xs text-muted-foreground">{t("Uptime")}</p>
@@ -121,7 +121,7 @@ export default function ServerDetailClient({
           </CardContent>
         </Card>
         {data?.host.Version && (
-          <Card className="rounded-[10px] bg-transparent border-none shadow-none">
+          <Card className="rounded-[10px] bg-transparent border-none shadow-none ring-0">
             <CardContent className="px-1.5 py-1">
               <section className="flex flex-col items-start gap-0.5">
                 <p className="text-xs text-muted-foreground">{t("Version")}</p>
@@ -131,7 +131,7 @@ export default function ServerDetailClient({
           </Card>
         )}
         {data?.host.Arch && (
-          <Card className="rounded-[10px] bg-transparent border-none shadow-none">
+          <Card className="rounded-[10px] bg-transparent border-none shadow-none ring-0">
             <CardContent className="px-1.5 py-1">
               <section className="flex flex-col items-start gap-0.5">
                 <p className="text-xs text-muted-foreground">{t("Arch")}</p>
@@ -141,7 +141,7 @@ export default function ServerDetailClient({
           </Card>
         )}
 
-        <Card className="rounded-[10px] bg-transparent border-none shadow-none">
+        <Card className="rounded-[10px] bg-transparent border-none shadow-none ring-0">
           <CardContent className="px-1.5 py-1">
             <section className="flex flex-col items-start gap-0.5">
               <p className="text-xs text-muted-foreground">{t("Mem")}</p>
@@ -149,7 +149,7 @@ export default function ServerDetailClient({
             </section>
           </CardContent>
         </Card>
-        <Card className="rounded-[10px] bg-transparent border-none shadow-none">
+        <Card className="rounded-[10px] bg-transparent border-none shadow-none ring-0">
           <CardContent className="px-1.5 py-1">
             <section className="flex flex-col items-start gap-0.5">
               <p className="text-xs text-muted-foreground">{t("Disk")}</p>
@@ -157,7 +157,7 @@ export default function ServerDetailClient({
             </section>
           </CardContent>
         </Card>
-        <Card className="rounded-[10px] bg-transparent border-none shadow-none">
+        <Card className="rounded-[10px] bg-transparent border-none shadow-none ring-0">
           <CardContent className="px-1.5 py-1">
             <section className="flex flex-col items-start gap-0.5">
               <p className="text-xs text-muted-foreground">{t("Region")}</p>
@@ -176,7 +176,7 @@ export default function ServerDetailClient({
       </section>
       <section className="flex flex-wrap gap-2 mt-1">
         {data?.host.Platform && (
-          <Card className="rounded-[10px] bg-transparent border-none shadow-none">
+          <Card className="rounded-[10px] bg-transparent border-none shadow-none ring-0">
             <CardContent className="px-1.5 py-1">
               <section className="flex flex-col items-start gap-0.5">
                 <p className="text-xs text-muted-foreground">{t("System")}</p>
@@ -190,7 +190,7 @@ export default function ServerDetailClient({
           </Card>
         )}
         {data?.host.CPU && (
-          <Card className="rounded-[10px] bg-transparent border-none shadow-none">
+          <Card className="rounded-[10px] bg-transparent border-none shadow-none ring-0">
             <CardContent className="px-1.5 py-1">
               <section className="flex flex-col items-start gap-0.5">
                 <p className="text-xs text-muted-foreground">{t("CPU")}</p>
@@ -201,7 +201,7 @@ export default function ServerDetailClient({
           </Card>
         )}
         {data?.host.GPU && (
-          <Card className="rounded-[10px] bg-transparent border-none shadow-none">
+          <Card className="rounded-[10px] bg-transparent border-none shadow-none ring-0">
             <CardContent className="px-1.5 py-1">
               <section className="flex flex-col items-start gap-0.5">
                 <p className="text-xs text-muted-foreground">{"GPU"}</p>
@@ -212,7 +212,7 @@ export default function ServerDetailClient({
         )}
       </section>
       <section className="flex flex-wrap gap-2 mt-1">
-        <Card className="rounded-[10px] bg-transparent border-none shadow-none">
+        <Card className="rounded-[10px] bg-transparent border-none shadow-none ring-0">
           <CardContent className="px-1.5 py-1">
             <section className="flex flex-col items-start gap-0.5">
               <p className="text-xs text-muted-foreground">{t("Load")}</p>
@@ -224,7 +224,7 @@ export default function ServerDetailClient({
             </section>
           </CardContent>
         </Card>
-        <Card className="rounded-[10px] bg-transparent border-none shadow-none">
+        <Card className="rounded-[10px] bg-transparent border-none shadow-none ring-0">
           <CardContent className="px-1.5 py-1">
             <section className="flex flex-col items-start gap-0.5">
               <p className="text-xs text-muted-foreground">{t("Upload")}</p>
@@ -239,7 +239,7 @@ export default function ServerDetailClient({
             </section>
           </CardContent>
         </Card>
-        <Card className="rounded-[10px] bg-transparent border-none shadow-none">
+        <Card className="rounded-[10px] bg-transparent border-none shadow-none ring-0">
           <CardContent className="px-1.5 py-1">
             <section className="flex flex-col items-start gap-0.5">
               <p className="text-xs text-muted-foreground">{t("Download")}</p>
