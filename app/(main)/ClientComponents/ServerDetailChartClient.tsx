@@ -5,7 +5,12 @@ import { useServerData } from "@/app/context/server-data-context";
 import { NezhaAPISafe } from "@/app/types/nezha-api";
 import AnimatedCircularProgressBar from "@/components/ui/animated-circular-progress-bar";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChartConfig, ChartContainer } from "@/components/ui/chart";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 import {
   formatBytes,
   formatNezhaInfo,
@@ -55,6 +60,50 @@ type connectChartData = {
   tcp: number;
   udp: number;
 };
+
+const activeDot = {
+  r: 4,
+  strokeWidth: 2,
+};
+
+function renderDetailChartTooltip({
+  labelFormatter = formatRelativeTime,
+  valueFormatter,
+}: {
+  labelFormatter?: (value: number) => string;
+  valueFormatter?: (value: number, name: string) => string;
+}) {
+  return (
+    <ChartTooltip
+      isAnimationActive={false}
+      content={
+        <ChartTooltipContent
+          indicator="line"
+          labelFormatter={(_, payload) =>
+            payload?.[0]?.payload?.timeStamp
+              ? labelFormatter(Number(payload[0].payload.timeStamp))
+              : null
+          }
+          formatter={(value, name) => {
+            const numericValue = Number(value);
+            const formattedValue = valueFormatter
+              ? valueFormatter(numericValue, String(name))
+              : numericValue.toFixed(2);
+
+            return (
+              <div className="flex flex-1 items-center justify-between leading-none">
+                <span className="text-muted-foreground">{String(name)}</span>
+                <span className="ml-2 font-medium tabular-nums text-foreground">
+                  {formattedValue}
+                </span>
+              </div>
+            );
+          }}
+        />
+      }
+    />
+  );
+}
 
 export default function ServerDetailChartClient({
   server_id,
@@ -174,6 +223,9 @@ function CpuChart({ data }: { data: NezhaAPISafe }) {
                 domain={[0, 100]}
                 tickFormatter={(value) => `${value}%`}
               />
+              {renderDetailChartTooltip({
+                valueFormatter: (value) => `${value.toFixed(2)}%`,
+              })}
               <Area
                 isAnimationActive={false}
                 dataKey="cpu"
@@ -181,6 +233,7 @@ function CpuChart({ data }: { data: NezhaAPISafe }) {
                 fill="hsl(var(--chart-1))"
                 fillOpacity={0.3}
                 stroke="hsl(var(--chart-1))"
+                activeDot={activeDot}
               />
             </AreaChart>
           </ChartContainer>
@@ -266,6 +319,9 @@ function ProcessChart({ data }: { data: NezhaAPISafe }) {
                 mirror={true}
                 tickMargin={-15}
               />
+              {renderDetailChartTooltip({
+                valueFormatter: (value) => value.toFixed(0),
+              })}
               <Area
                 isAnimationActive={false}
                 dataKey="process"
@@ -273,6 +329,7 @@ function ProcessChart({ data }: { data: NezhaAPISafe }) {
                 fill="hsl(var(--chart-2))"
                 fillOpacity={0.3}
                 stroke="hsl(var(--chart-2))"
+                activeDot={activeDot}
               />
             </AreaChart>
           </ChartContainer>
@@ -394,6 +451,9 @@ function MemChart({ data }: { data: NezhaAPISafe }) {
                 domain={[0, 100]}
                 tickFormatter={(value) => `${value}%`}
               />
+              {renderDetailChartTooltip({
+                valueFormatter: (value) => `${value.toFixed(2)}%`,
+              })}
               <Area
                 isAnimationActive={false}
                 dataKey="mem"
@@ -401,6 +461,7 @@ function MemChart({ data }: { data: NezhaAPISafe }) {
                 fill="hsl(var(--chart-8))"
                 fillOpacity={0.3}
                 stroke="hsl(var(--chart-8))"
+                activeDot={activeDot}
               />
               <Area
                 isAnimationActive={false}
@@ -409,6 +470,7 @@ function MemChart({ data }: { data: NezhaAPISafe }) {
                 fill="hsl(var(--chart-10))"
                 fillOpacity={0.3}
                 stroke="hsl(var(--chart-10))"
+                activeDot={activeDot}
               />
             </AreaChart>
           </ChartContainer>
@@ -506,6 +568,9 @@ function DiskChart({ data }: { data: NezhaAPISafe }) {
                 domain={[0, 100]}
                 tickFormatter={(value) => `${value}%`}
               />
+              {renderDetailChartTooltip({
+                valueFormatter: (value) => `${value.toFixed(2)}%`,
+              })}
               <Area
                 isAnimationActive={false}
                 dataKey="disk"
@@ -513,6 +578,7 @@ function DiskChart({ data }: { data: NezhaAPISafe }) {
                 fill="hsl(var(--chart-5))"
                 fillOpacity={0.3}
                 stroke="hsl(var(--chart-5))"
+                activeDot={activeDot}
               />
             </AreaChart>
           </ChartContainer>
@@ -626,6 +692,9 @@ function NetworkChart({ data }: { data: NezhaAPISafe }) {
                 domain={[1, maxDownload]}
                 tickFormatter={(value) => `${value.toFixed(0)}M/s`}
               />
+              {renderDetailChartTooltip({
+                valueFormatter: (value) => `${value.toFixed(2)} M/s`,
+              })}
               <Line
                 isAnimationActive={false}
                 dataKey="upload"
@@ -633,6 +702,7 @@ function NetworkChart({ data }: { data: NezhaAPISafe }) {
                 stroke="hsl(var(--chart-1))"
                 strokeWidth={1}
                 dot={false}
+                activeDot={activeDot}
               />
               <Line
                 isAnimationActive={false}
@@ -641,6 +711,7 @@ function NetworkChart({ data }: { data: NezhaAPISafe }) {
                 stroke="hsl(var(--chart-4))"
                 strokeWidth={1}
                 dot={false}
+                activeDot={activeDot}
               />
             </LineChart>
           </ChartContainer>
@@ -741,6 +812,9 @@ function ConnectChart({ data }: { data: NezhaAPISafe }) {
                 type="number"
                 interval="preserveStartEnd"
               />
+              {renderDetailChartTooltip({
+                valueFormatter: (value) => value.toFixed(0),
+              })}
               <Line
                 isAnimationActive={false}
                 dataKey="tcp"
@@ -748,6 +822,7 @@ function ConnectChart({ data }: { data: NezhaAPISafe }) {
                 stroke="hsl(var(--chart-1))"
                 strokeWidth={1}
                 dot={false}
+                activeDot={activeDot}
               />
               <Line
                 isAnimationActive={false}
@@ -756,6 +831,7 @@ function ConnectChart({ data }: { data: NezhaAPISafe }) {
                 stroke="hsl(var(--chart-4))"
                 strokeWidth={1}
                 dot={false}
+                activeDot={activeDot}
               />
             </LineChart>
           </ChartContainer>
