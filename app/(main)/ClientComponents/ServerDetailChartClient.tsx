@@ -11,6 +11,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { appendDetailChartSample } from "@/lib/detail-chart-data";
 import {
   formatBytes,
   formatNezhaInfo,
@@ -65,6 +66,9 @@ const activeDot = {
   r: 4,
   strokeWidth: 2,
 };
+
+const DETAIL_CHART_INTERPOLATION_STEPS = 8;
+const DETAIL_CHART_MAX_POINTS = 240;
 
 function renderDetailChartTooltip({
   labelFormatter = formatRelativeTime,
@@ -149,23 +153,17 @@ function CpuChart({ data }: { data: NezhaAPISafe }) {
   const { cpu } = formatNezhaInfo(data);
 
   useEffect(() => {
-    if (data) {
-      const timestamp = Date.now().toString();
-      let newData = [] as cpuChartData[];
-      if (cpuChartData.length === 0) {
-        newData = [
-          { timeStamp: timestamp, cpu: cpu },
-          { timeStamp: timestamp, cpu: cpu },
-        ];
-      } else {
-        newData = [...cpuChartData, { timeStamp: timestamp, cpu: cpu }];
-      }
-      if (newData.length > 30) {
-        newData.shift();
-      }
-      setCpuChartData(newData);
-    }
-  }, [data]);
+    const timestamp = Date.now().toString();
+    setCpuChartData((currentData) =>
+      appendDetailChartSample(
+        currentData,
+        { timeStamp: timestamp, cpu },
+        ["cpu"],
+        DETAIL_CHART_INTERPOLATION_STEPS,
+        DETAIL_CHART_MAX_POINTS,
+      ),
+    );
+  }, [cpu, data]);
 
   const chartConfig = {
     cpu: {
@@ -229,7 +227,7 @@ function CpuChart({ data }: { data: NezhaAPISafe }) {
               <Area
                 isAnimationActive={false}
                 dataKey="cpu"
-                type="step"
+                type="linear"
                 fill="hsl(var(--chart-1))"
                 fillOpacity={0.3}
                 stroke="hsl(var(--chart-1))"
@@ -253,26 +251,17 @@ function ProcessChart({ data }: { data: NezhaAPISafe }) {
   const { process } = formatNezhaInfo(data);
 
   useEffect(() => {
-    if (data) {
-      const timestamp = Date.now().toString();
-      let newData = [] as processChartData[];
-      if (processChartData.length === 0) {
-        newData = [
-          { timeStamp: timestamp, process: process },
-          { timeStamp: timestamp, process: process },
-        ];
-      } else {
-        newData = [
-          ...processChartData,
-          { timeStamp: timestamp, process: process },
-        ];
-      }
-      if (newData.length > 30) {
-        newData.shift();
-      }
-      setProcessChartData(newData);
-    }
-  }, [data]);
+    const timestamp = Date.now().toString();
+    setProcessChartData((currentData) =>
+      appendDetailChartSample(
+        currentData,
+        { timeStamp: timestamp, process },
+        ["process"],
+        DETAIL_CHART_INTERPOLATION_STEPS,
+        DETAIL_CHART_MAX_POINTS,
+      ),
+    );
+  }, [process, data]);
 
   const chartConfig = {
     process: {
@@ -325,7 +314,7 @@ function ProcessChart({ data }: { data: NezhaAPISafe }) {
               <Area
                 isAnimationActive={false}
                 dataKey="process"
-                type="step"
+                type="linear"
                 fill="hsl(var(--chart-2))"
                 fillOpacity={0.3}
                 stroke="hsl(var(--chart-2))"
@@ -347,26 +336,17 @@ function MemChart({ data }: { data: NezhaAPISafe }) {
   const { mem, swap } = formatNezhaInfo(data);
 
   useEffect(() => {
-    if (data) {
-      const timestamp = Date.now().toString();
-      let newData = [] as memChartData[];
-      if (memChartData.length === 0) {
-        newData = [
-          { timeStamp: timestamp, mem: mem, swap: swap },
-          { timeStamp: timestamp, mem: mem, swap: swap },
-        ];
-      } else {
-        newData = [
-          ...memChartData,
-          { timeStamp: timestamp, mem: mem, swap: swap },
-        ];
-      }
-      if (newData.length > 30) {
-        newData.shift();
-      }
-      setMemChartData(newData);
-    }
-  }, [data]);
+    const timestamp = Date.now().toString();
+    setMemChartData((currentData) =>
+      appendDetailChartSample(
+        currentData,
+        { timeStamp: timestamp, mem, swap },
+        ["mem", "swap"],
+        DETAIL_CHART_INTERPOLATION_STEPS,
+        DETAIL_CHART_MAX_POINTS,
+      ),
+    );
+  }, [mem, swap, data]);
 
   const chartConfig = {
     mem: {
@@ -457,7 +437,7 @@ function MemChart({ data }: { data: NezhaAPISafe }) {
               <Area
                 isAnimationActive={false}
                 dataKey="mem"
-                type="step"
+                type="linear"
                 fill="hsl(var(--chart-8))"
                 fillOpacity={0.3}
                 stroke="hsl(var(--chart-8))"
@@ -466,7 +446,7 @@ function MemChart({ data }: { data: NezhaAPISafe }) {
               <Area
                 isAnimationActive={false}
                 dataKey="swap"
-                type="step"
+                type="linear"
                 fill="hsl(var(--chart-10))"
                 fillOpacity={0.3}
                 stroke="hsl(var(--chart-10))"
@@ -488,23 +468,17 @@ function DiskChart({ data }: { data: NezhaAPISafe }) {
   const { disk } = formatNezhaInfo(data);
 
   useEffect(() => {
-    if (data) {
-      const timestamp = Date.now().toString();
-      let newData = [] as diskChartData[];
-      if (diskChartData.length === 0) {
-        newData = [
-          { timeStamp: timestamp, disk: disk },
-          { timeStamp: timestamp, disk: disk },
-        ];
-      } else {
-        newData = [...diskChartData, { timeStamp: timestamp, disk: disk }];
-      }
-      if (newData.length > 30) {
-        newData.shift();
-      }
-      setDiskChartData(newData);
-    }
-  }, [data]);
+    const timestamp = Date.now().toString();
+    setDiskChartData((currentData) =>
+      appendDetailChartSample(
+        currentData,
+        { timeStamp: timestamp, disk },
+        ["disk"],
+        DETAIL_CHART_INTERPOLATION_STEPS,
+        DETAIL_CHART_MAX_POINTS,
+      ),
+    );
+  }, [disk, data]);
 
   const chartConfig = {
     disk: {
@@ -574,7 +548,7 @@ function DiskChart({ data }: { data: NezhaAPISafe }) {
               <Area
                 isAnimationActive={false}
                 dataKey="disk"
-                type="step"
+                type="linear"
                 fill="hsl(var(--chart-5))"
                 fillOpacity={0.3}
                 stroke="hsl(var(--chart-5))"
@@ -598,26 +572,17 @@ function NetworkChart({ data }: { data: NezhaAPISafe }) {
   const { up, down } = formatNezhaInfo(data);
 
   useEffect(() => {
-    if (data) {
-      const timestamp = Date.now().toString();
-      let newData = [] as networkChartData[];
-      if (networkChartData.length === 0) {
-        newData = [
-          { timeStamp: timestamp, upload: up, download: down },
-          { timeStamp: timestamp, upload: up, download: down },
-        ];
-      } else {
-        newData = [
-          ...networkChartData,
-          { timeStamp: timestamp, upload: up, download: down },
-        ];
-      }
-      if (newData.length > 30) {
-        newData.shift();
-      }
-      setNetworkChartData(newData);
-    }
-  }, [data]);
+    const timestamp = Date.now().toString();
+    setNetworkChartData((currentData) =>
+      appendDetailChartSample(
+        currentData,
+        { timeStamp: timestamp, upload: up, download: down },
+        ["upload", "download"],
+        DETAIL_CHART_INTERPOLATION_STEPS,
+        DETAIL_CHART_MAX_POINTS,
+      ),
+    );
+  }, [up, down, data]);
 
   let maxDownload = Math.max(...networkChartData.map((item) => item.download));
   maxDownload = Math.ceil(maxDownload);
@@ -729,26 +694,17 @@ function ConnectChart({ data }: { data: NezhaAPISafe }) {
   const { tcp, udp } = formatNezhaInfo(data);
 
   useEffect(() => {
-    if (data) {
-      const timestamp = Date.now().toString();
-      let newData = [] as connectChartData[];
-      if (connectChartData.length === 0) {
-        newData = [
-          { timeStamp: timestamp, tcp: tcp, udp: udp },
-          { timeStamp: timestamp, tcp: tcp, udp: udp },
-        ];
-      } else {
-        newData = [
-          ...connectChartData,
-          { timeStamp: timestamp, tcp: tcp, udp: udp },
-        ];
-      }
-      if (newData.length > 30) {
-        newData.shift();
-      }
-      setConnectChartData(newData);
-    }
-  }, [data]);
+    const timestamp = Date.now().toString();
+    setConnectChartData((currentData) =>
+      appendDetailChartSample(
+        currentData,
+        { timeStamp: timestamp, tcp, udp },
+        ["tcp", "udp"],
+        DETAIL_CHART_INTERPOLATION_STEPS,
+        DETAIL_CHART_MAX_POINTS,
+      ),
+    );
+  }, [tcp, udp, data]);
 
   const chartConfig = {
     tcp: {
