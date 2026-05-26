@@ -9,9 +9,17 @@ export function appendDetailChartSample<T extends DetailChartPoint>(
   valueKeys: (keyof T & string)[],
   interpolationSteps: number,
   maxPoints = 60,
+  initialDuration = 0,
 ): T[] {
   if (currentData.length === 0) {
-    return [sample, sample].slice(-maxPoints);
+    const sampleTime = Number(sample.timeStamp);
+    const initialPoints = initialDuration > 0 ? maxPoints : 2;
+    const initialStep = initialPoints > 1 ? initialDuration / (initialPoints - 1) : 0;
+
+    return Array.from({ length: initialPoints }, (_, index) => ({
+      ...sample,
+      timeStamp: Math.round(sampleTime - initialDuration + initialStep * index).toString(),
+    })).slice(-maxPoints);
   }
 
   const previous = currentData[currentData.length - 1];

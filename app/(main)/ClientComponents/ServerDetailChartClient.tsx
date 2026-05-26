@@ -69,6 +69,7 @@ const activeDot = {
 
 const DETAIL_CHART_INTERPOLATION_STEPS = 8;
 const DETAIL_CHART_MAX_POINTS = 240;
+const DETAIL_CHART_INITIAL_DURATION = 60_000;
 
 function renderDetailChartTooltip({
   labelFormatter = formatRelativeTime,
@@ -161,6 +162,7 @@ function CpuChart({ data }: { data: NezhaAPISafe }) {
         ["cpu"],
         DETAIL_CHART_INTERPOLATION_STEPS,
         DETAIL_CHART_MAX_POINTS,
+        DETAIL_CHART_INITIAL_DURATION,
       ),
     );
   }, [cpu, data]);
@@ -259,6 +261,7 @@ function ProcessChart({ data }: { data: NezhaAPISafe }) {
         ["process"],
         DETAIL_CHART_INTERPOLATION_STEPS,
         DETAIL_CHART_MAX_POINTS,
+        DETAIL_CHART_INITIAL_DURATION,
       ),
     );
   }, [process, data]);
@@ -344,6 +347,7 @@ function MemChart({ data }: { data: NezhaAPISafe }) {
         ["mem", "swap"],
         DETAIL_CHART_INTERPOLATION_STEPS,
         DETAIL_CHART_MAX_POINTS,
+        DETAIL_CHART_INITIAL_DURATION,
       ),
     );
   }, [mem, swap, data]);
@@ -476,6 +480,7 @@ function DiskChart({ data }: { data: NezhaAPISafe }) {
         ["disk"],
         DETAIL_CHART_INTERPOLATION_STEPS,
         DETAIL_CHART_MAX_POINTS,
+        DETAIL_CHART_INITIAL_DURATION,
       ),
     );
   }, [disk, data]);
@@ -580,6 +585,7 @@ function NetworkChart({ data }: { data: NezhaAPISafe }) {
         ["upload", "download"],
         DETAIL_CHART_INTERPOLATION_STEPS,
         DETAIL_CHART_MAX_POINTS,
+        DETAIL_CHART_INITIAL_DURATION,
       ),
     );
   }, [up, down, data]);
@@ -702,6 +708,7 @@ function ConnectChart({ data }: { data: NezhaAPISafe }) {
         ["tcp", "udp"],
         DETAIL_CHART_INTERPOLATION_STEPS,
         DETAIL_CHART_MAX_POINTS,
+        DETAIL_CHART_INITIAL_DURATION,
       ),
     );
   }, [tcp, udp, data]);
