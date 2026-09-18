@@ -1,5 +1,6 @@
 "use client";
 
+import styles from "@/app/(main)/ClientComponents/NetworkChart.module.css";
 import NetworkChartLoading from "@/app/(main)/ClientComponents/NetworkChartLoading";
 import { NezhaAPIMonitor, ServerMonitorChart } from "@/app/types/nezha-api";
 import {
@@ -20,7 +21,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import getEnv from "@/lib/env-entry";
-import { formatTime, nezhaFetcher } from "@/lib/utils";
+import { cn, formatTime, nezhaFetcher } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import * as React from "react";
 import { useCallback, useMemo } from "react";
@@ -183,7 +184,13 @@ export const NetworkChart = React.memo(function NetworkChart({
             data-active={activeChart === key}
             aria-pressed={activeChart === key}
             title={key}
-            className="relative flex min-w-0 flex-[1_1_calc(50%-1px)] cursor-pointer flex-col justify-center gap-1 bg-card px-4 py-4 text-left transition-colors hover:bg-muted focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring data-[active=true]:bg-muted sm:flex-[1_1_8.5rem] sm:px-6"
+            className={cn(
+              styles.monitor,
+              "relative flex min-w-0 flex-[1_1_calc(50%-1px)] cursor-pointer flex-col justify-center gap-1 bg-card px-4 py-4 text-left hover:bg-muted focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring data-[active=true]:bg-muted sm:flex-[1_1_8.5rem] sm:px-6",
+            )}
+            style={
+              { "--monitor-color": getColorByIndex(key) } as React.CSSProperties
+            }
             onClick={() => handleButtonClick(key)}
           >
             <span className="truncate whitespace-nowrap text-xs text-muted-foreground">
@@ -211,7 +218,14 @@ export const NetworkChart = React.memo(function NetworkChart({
           </button>
         );
       }),
-    [activeChart, chartData, chartDataKey, chartStats, handleButtonClick],
+    [
+      activeChart,
+      chartData,
+      chartDataKey,
+      chartStats,
+      getColorByIndex,
+      handleButtonClick,
+    ],
   );
 
   const chartElements = useMemo(() => {
@@ -358,7 +372,7 @@ export const NetworkChart = React.memo(function NetworkChart({
   ]);
 
   return (
-    <Card>
+    <Card className={styles.card}>
       <CardHeader className="flex flex-col items-stretch space-y-0 overflow-hidden rounded-t-lg border-b border-neutral-200 p-0 sm:flex-row dark:border-neutral-800">
         <div className="flex min-w-0 flex-none flex-col justify-center gap-1 border-b border-neutral-200 px-6 py-4 sm:max-w-56 sm:border-b-0 dark:border-neutral-800">
           <CardTitle className="break-words text-md">{serverName}</CardTitle>

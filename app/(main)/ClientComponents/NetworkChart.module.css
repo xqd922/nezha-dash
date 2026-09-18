@@ -1,0 +1,76 @@
+.card {
+  animation: appear 320ms ease-out both;
+}
+
+.monitor {
+  transition: background-color 180ms ease-out;
+}
+
+.monitor > span,
+.monitor > div {
+  transition: transform 180ms ease-out;
+}
+
+.monitor::after {
+  position: absolute;
+  right: 16px;
+  bottom: 0;
+  left: 16px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--monitor-color);
+  content: "";
+  opacity: 0;
+  transform: scaleX(0.4);
+  transition:
+    transform 220ms ease-out,
+    opacity 180ms ease-out;
+}
+
+.monitor[data-active="true"]::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .monitor:hover > span,
+  .monitor:hover > div {
+    transform: translateY(-2px);
+  }
+}
+
+.monitor:active > span,
+.monitor:active > div {
+  transform: translateY(0) scale(0.98);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    animation: none;
+  }
+
+  .monitor,
+  .monitor > span,
+  .monitor > div,
+  .monitor::after {
+    transition: none;
+  }
+
+  .monitor:hover > span,
+  .monitor:hover > div,
+  .monitor:active > span,
+  .monitor:active > div {
+    transform: none;
+  }
+}
