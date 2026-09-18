@@ -20,7 +20,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import getEnv from "@/lib/env-entry";
-import { cn, formatTime, nezhaFetcher } from "@/lib/utils";
+import { formatTime, nezhaFetcher } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import * as React from "react";
 import { useCallback, useMemo } from "react";
@@ -123,9 +123,7 @@ export const NetworkChart = React.memo(function NetworkChart({
     getEnv("NEXT_PUBLIC_ForcePeakCutEnabled") === "true";
 
   const [activeChart, setActiveChart] = React.useState(defaultChart);
-  const [isPeakEnabled, setIsPeakEnabled] = React.useState(
-    forcePeakCutEnabled,
-  );
+  const [isPeakEnabled, setIsPeakEnabled] = React.useState(forcePeakCutEnabled);
 
   const handleButtonClick = useCallback(
     (chart: string) => {
@@ -183,22 +181,26 @@ export const NetworkChart = React.memo(function NetworkChart({
             type="button"
             key={key}
             data-active={activeChart === key}
-            className="relative z-30 flex min-w-0 cursor-pointer flex-col justify-center gap-1 border-b border-neutral-200 px-6 py-4 text-left data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-6 dark:border-neutral-800"
+            aria-pressed={activeChart === key}
+            title={key}
+            className="relative flex min-w-0 flex-[1_1_calc(50%-1px)] cursor-pointer flex-col justify-center gap-1 bg-card px-4 py-4 text-left transition-colors hover:bg-muted focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring data-[active=true]:bg-muted sm:flex-[1_1_8.5rem] sm:px-6"
             onClick={() => handleButtonClick(key)}
           >
             <span className="truncate whitespace-nowrap text-xs text-muted-foreground">
               {key}
             </span>
             <div className="flex flex-col gap-0.5">
-              <span className="text-md font-bold leading-none sm:text-lg">
+              <span className="whitespace-nowrap text-md font-bold leading-none tabular-nums sm:text-lg">
                 {chartData[key][chartData[key].length - 1].avg_delay.toFixed(2)}
                 ms
               </span>
-              <div className="flex items-center gap-2 text-[10px]">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] tabular-nums">
                 <span className="text-green-500">
                   ↓{stats.minDelay.toFixed(0)}
                 </span>
-                <span className="text-red-500">↑{stats.maxDelay.toFixed(0)}</span>
+                <span className="text-red-500">
+                  ↑{stats.maxDelay.toFixed(0)}
+                </span>
                 {averagePacketLoss !== null && (
                   <span className="text-muted-foreground">
                     {averagePacketLoss.toFixed(2)}%
@@ -282,7 +284,8 @@ export const NetworkChart = React.memo(function NetworkChart({
 
       const validValues = values.filter(
         (value) =>
-          Math.abs(value - median) <= 3 * medianDeviation && value <= median * 3,
+          Math.abs(value - median) <= 3 * medianDeviation &&
+          value <= median * 3,
       );
 
       if (validValues.length === 0) return median;
@@ -307,7 +310,9 @@ export const NetworkChart = React.memo(function NetworkChart({
         chartDataKey.forEach((key) => {
           const values = window
             .map((item) => item[key])
-            .filter((value) => value !== undefined && value !== null) as number[];
+            .filter(
+              (value) => value !== undefined && value !== null,
+            ) as number[];
 
           if (values.length > 0) {
             const processed = processValues(values);
@@ -354,11 +359,9 @@ export const NetworkChart = React.memo(function NetworkChart({
 
   return (
     <Card>
-      <CardHeader className="flex flex-col items-stretch space-y-0 overflow-hidden rounded-t-lg p-0 sm:flex-row">
-        <div className="flex flex-none flex-col justify-center gap-1 border-b px-6 py-4">
-          <CardTitle className="flex flex-none items-center gap-0.5 text-md">
-            {serverName}
-          </CardTitle>
+      <CardHeader className="flex flex-col items-stretch space-y-0 overflow-hidden rounded-t-lg border-b border-neutral-200 p-0 sm:flex-row dark:border-neutral-800">
+        <div className="flex min-w-0 flex-none flex-col justify-center gap-1 border-b border-neutral-200 px-6 py-4 sm:max-w-56 sm:border-b-0 dark:border-neutral-800">
+          <CardTitle className="break-words text-md">{serverName}</CardTitle>
           <div className="flex items-center justify-between">
             <CardDescription className="mr-2 text-xs">
               {chartDataKey.length} {t("ServerMonitorCount")}
@@ -375,12 +378,7 @@ export const NetworkChart = React.memo(function NetworkChart({
             </div>
           </div>
         </div>
-        <div
-          className={cn(
-            "grid min-w-0 w-full flex-1",
-            getMonitorButtonGridClass(chartDataKey.length),
-          )}
-        >
+        <div className="flex w-full min-w-0 flex-1 flex-wrap gap-px bg-neutral-200 sm:border-l sm:border-neutral-200 dark:bg-neutral-800 dark:sm:border-neutral-800">
           {chartButtons}
         </div>
       </CardHeader>
@@ -504,15 +502,6 @@ export const NetworkChart = React.memo(function NetworkChart({
     </Card>
   );
 });
-
-function getMonitorButtonGridClass(count: number) {
-  if (count <= 1) return "grid-cols-1";
-  if (count === 2) return "grid-cols-2";
-  if (count === 3) return "grid-cols-2 sm:grid-cols-3";
-  if (count === 4) return "grid-cols-2 sm:grid-cols-3 xl:grid-cols-4";
-  if (count === 5) return "grid-cols-2 sm:grid-cols-3 xl:grid-cols-5";
-  return "grid-cols-2 sm:grid-cols-3 xl:grid-cols-6";
-}
 
 const transformData = (data: NezhaAPIMonitor[]) => {
   const monitorData: ServerMonitorChart = {};
