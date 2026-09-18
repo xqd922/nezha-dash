@@ -20,7 +20,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import getEnv from "@/lib/env-entry";
-import { formatTime, nezhaFetcher } from "@/lib/utils";
+import { cn, formatTime, nezhaFetcher } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import * as React from "react";
 import { useCallback, useMemo } from "react";
@@ -375,7 +375,12 @@ export const NetworkChart = React.memo(function NetworkChart({
             </div>
           </div>
         </div>
-        <div className="grid w-full grid-cols-2 sm:grid-cols-3 xl:grid-cols-6">
+        <div
+          className={cn(
+            "grid min-w-0 w-full flex-1",
+            getMonitorButtonGridClass(chartDataKey.length),
+          )}
+        >
           {chartButtons}
         </div>
       </CardHeader>
@@ -499,6 +504,15 @@ export const NetworkChart = React.memo(function NetworkChart({
     </Card>
   );
 });
+
+function getMonitorButtonGridClass(count: number) {
+  if (count <= 1) return "grid-cols-1";
+  if (count === 2) return "grid-cols-2";
+  if (count === 3) return "grid-cols-2 sm:grid-cols-3";
+  if (count === 4) return "grid-cols-2 sm:grid-cols-3 xl:grid-cols-4";
+  if (count === 5) return "grid-cols-2 sm:grid-cols-3 xl:grid-cols-5";
+  return "grid-cols-2 sm:grid-cols-3 xl:grid-cols-6";
+}
 
 const transformData = (data: NezhaAPIMonitor[]) => {
   const monitorData: ServerMonitorChart = {};
