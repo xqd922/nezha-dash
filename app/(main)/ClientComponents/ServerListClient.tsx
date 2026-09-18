@@ -136,23 +136,25 @@ export default function ServerListClient() {
   return (
     <>
       <section className="flex items-center gap-2 w-full overflow-hidden">
-        <button
-          type="button"
-          onClick={() => {
-            const newShowMap = !showMap;
-            setShowMap(newShowMap);
-            localStorage.setItem("showMap", String(newShowMap));
-          }}
-          className={cn(
-            "inset-shadow-2xs inset-shadow-white/20 flex cursor-pointer flex-col items-center gap-0 rounded-[50px] bg-blue-100 p-2.5 text-blue-600 transition-all dark:bg-blue-900 dark:text-blue-100",
-            {
-              "inset-shadow-black/20 bg-blue-600 text-white dark:bg-blue-100 dark:text-blue-600":
-                showMap,
-            },
-          )}
-        >
-          <MapIcon className="size-[13px]" />
-        </button>
+        {getEnv("NEXT_PUBLIC_ShowMap") !== "false" && (
+          <button
+            type="button"
+            onClick={() => {
+              const newShowMap = !showMap;
+              setShowMap(newShowMap);
+              localStorage.setItem("showMap", String(newShowMap));
+            }}
+            className={cn(
+              "inset-shadow-2xs inset-shadow-white/20 flex cursor-pointer flex-col items-center gap-0 rounded-[50px] bg-blue-100 p-2.5 text-blue-600 transition-all dark:bg-blue-900 dark:text-blue-100",
+              {
+                "inset-shadow-black/20 bg-blue-600 text-white dark:bg-blue-100 dark:text-blue-600":
+                  showMap,
+              },
+            )}
+          >
+            <MapIcon className="size-[13px]" />
+          </button>
+        )}
         <button
           type="button"
           onClick={() => {
