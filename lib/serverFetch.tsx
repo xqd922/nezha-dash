@@ -133,8 +133,12 @@ export async function GetNezhaData() {
 
         data.total_out_bandwidth += element.status.NetOutTransfer;
         data.total_in_bandwidth += element.status.NetInTransfer;
-        data.total_in_speed += element.status.NetInSpeed;
-        data.total_out_speed += element.status.NetOutSpeed;
+        // Offline agents keep their last reported speed. Only live servers
+        // should contribute to the current aggregate rate.
+        if (isOnline) {
+          data.total_in_speed += element.status.NetInSpeed;
+          data.total_out_speed += element.status.NetOutSpeed;
+        }
 
         // Remove unwanted properties
         delete element.ipv4;
